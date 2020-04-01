@@ -9,6 +9,39 @@ int bc_printA(char *str)
     printf("\E(B");
 	return 0;
 }
+int bc_box(int x1, int y1, int x2, int y2) 
+{
+	/*
+	"левый верхний угол располагается в строке x1 и столбце
+	y1, а еѐ ширина и высота равна y2 столбцов и x2 строк;"
+	*/
+	mt_gotoXY(x1, y1);
+	int i;
+	bc_printA("l"); //левый верхний угол
+	for (i = y1 + 1; i <= y2 - 1; i++)
+	{
+		mt_gotoXY(x1, i);
+		bc_printA("r");
+	}
+	mt_gotoXY(x1, y2);
+	bc_printA("k"); //правый верхний
+	for (i = x1 + 1; i <= x2 - 1; i++)
+	{
+		mt_gotoXY(i, y1);//"Первый параметр номер строки, второй - номер столбца;"
+		bc_printA("x");
+		mt_gotoXY(i, y2);
+		bc_printA("x");
+	} 
+	mt_gotoXY(x2, y1);
+	bc_printA("m"); //левый нижний
+	for (i = y1 + 1; i <= y2 - 1; i++)
+	{
+		mt_gotoXY(x2, i);
+		bc_printA("r");
+	}
+	mt_gotoXY(x2, y2);
+	bc_printA("j"); //правый нижний*/
+}
 ////////////////
 int main()
 {
@@ -30,8 +63,10 @@ int main()
    	bc_printA("q");
    	bc_printA("Q");
    	
-   	
-	printf("\E(0");
+   	mt_clrscr();
+   	bc_box(1, 3, 10, 70);
+   	printf("asdad");
+	/*printf("\E(0");
     printf("lrrrrrrrrrrrrrk\n");
     printf("x             x\n");
     printf("x             x\n");
@@ -40,7 +75,7 @@ int main()
     printf("x             x\n");
     printf("x             x\n");
     printf("mrrrrrrrrrrrrrj\n");
-    printf("\E(B");
+    printf("\E(B");*/
    	
    	
    	
