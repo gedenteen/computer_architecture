@@ -44,6 +44,24 @@ int bc_box(int x1, int y1, int x2, int y2)
 	bc_printA("j"); //правый нижний*/
 	return 0;
 }
+int bc_setbigcharpos (int * big, int x, int y, int value)
+{
+
+	return 0;
+}
+int bc_getbigcharpos(int * big, int x, int y, int *value)
+{
+	if (x < 4)
+	{
+		*value = (big[0] >> (x * 8 + y)) & 1;
+	}
+	else 
+	{
+		x -= 4;
+		*value = (big[1] >> (x * 8 + y)) & 1;
+	}
+	return 0;
+}
 int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors color2)
 { //"в строке x и столбце y"
 	/*int qew = 2147483647;
@@ -52,7 +70,7 @@ int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors c
    		printf("Ошибка: int не четырехбитовый \n");
    		return -1;
    	}*/
-	int i, u, temp = big[0], value;
+	int i, u, value;
 	for (i = 0; i < 8; i++)
 	{
 		for (u = 0; u < 8; u++)
@@ -65,23 +83,6 @@ int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors c
 				bc_printA(" ");
 		}
 	
-	}
-	return 0;
-}
-int bc_setbigcharpos (int * big, int x, int y, int value)
-{
-
-}
-int bc_getbigcharpos(int * big, int x, int y, int *value)
-{
-	if (x < 4)
-	{
-		*value = (big[0] >> (x * 8 + y)) & 1;
-	}
-	else 
-	{
-		x -= 4;
-		*value = (big[1] >> (x * 8 + y)) & 1;
 	}
 	return 0;
 }
