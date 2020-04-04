@@ -46,7 +46,36 @@ int bc_box(int x1, int y1, int x2, int y2)
 }
 int bc_setbigcharpos (int * big, int x, int y, int value)
 {
-
+	if (value)
+	{
+		if (x < 4)
+		{
+			value = 1 << (x * 8 + y);
+			big[0] = big[0] | value;
+		}
+		else 
+		{
+			x -= 4;
+			value = 1 << (x * 8 + y);
+			big[1] = big[1] | value;
+		}
+	}
+	else //value == 0
+	{
+		if (x < 4)
+		{
+			value = 1 << (x * 8 + y);
+			value = ~value; //побитовая инверсия
+			big[0] = big[0] & value;
+		}
+		else 
+		{
+			x -= 4;
+			value = 1 << (x * 8 + y);
+			value = ~value; //побитовая инверсия
+			big[0] = big[0] & value;
+		}
+	}
 	return 0;
 }
 int bc_getbigcharpos(int * big, int x, int y, int *value)
@@ -124,43 +153,12 @@ int main()
    	printf("12345678");
    	bc_printbigchar(arr, 3, 4, WHITE, YELLOW);
    	
-   	
-   	/*mt_gotoXY(12,1);
-   	mt_setfgcolor(GREEN);
-   	printf("1 ");
-   	printf("\E(0");
-   	printf("aaaaaaaa");
-   	printf("\E(B \n");	
-   	printf("2 ");
-   	printf("\E(0");
-   	printf("aa    aa");
-   	printf("\E(B \n");
-   	printf("3 ");
-   	printf("\E(0");
-   	printf("aa    aa");
-   	printf("\E(B \n");
-   	printf("4 ");
-   	printf("\E(0");
-   	printf("aa    aa");
-   	printf("\E(B \n");	
-   	printf("5 ");
-   	printf("\E(0");
-   	printf("aaaaaaaa");
-   	printf("\E(B \n");
-   	printf("6 ");
-   	printf("\E(0");
-   	printf("      aa");
-   	printf("\E(B \n");
-   	printf("7 ");
-   	printf("\E(0");
-   	printf("      aa");
-   	printf("\E(B \n");
-   	printf("1 ");
-   	printf("\E(0");
-   	printf("aaaaaaaa");
-   	printf("\E(B \n");	
-   	printf("  12345678");*/
-   	
+   	mt_gotoXY(12,4);
+   	bc_setbigcharpos (arr, 6, 0, 1);
+   	bc_setbigcharpos (arr, 0, 7, 0);
+   	bc_setbigcharpos (arr, 1, 7, 1);
+   	bc_setbigcharpos (arr, 1, 1, 0);
+   	bc_printbigchar(arr, 3, 14, WHITE, YELLOW);
    	
    	
     
