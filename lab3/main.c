@@ -9,8 +9,8 @@
 int bc_printA(char *str)
 {
 	printf("\E(0");
-    printf("%s\n", str);
-    printf("\E(B");
+	printf("%s\n", str);
+	printf("\E(B");
 	return 0;
 }
 int bc_box(int x1, int y1, int x2, int y2) 
@@ -19,6 +19,12 @@ int bc_box(int x1, int y1, int x2, int y2)
 	"левый верхний угол располагается в строке x1 и столбце
 	y1, а еѐ ширина и высота равна y2 столбцов и x2 строк;"
 	*/
+	if (x1 < 1 || y1 < 1 || x2 < 1 || y2 < 1 ||
+	x2 <= x1 || y2 <= y1)
+	{
+		printf("Ошибка: заданы неправильные параметры для bc_box()\n");
+		return -1;	
+	}
 	mt_gotoXY(x1, y1);
 	int i;
 	bc_printA("l"); //левый верхний угол
@@ -49,6 +55,12 @@ int bc_box(int x1, int y1, int x2, int y2)
 }
 int bc_setbigcharpos (int * big, int x, int y, int value)
 {
+	if (x < 0 || x > 7 || y < 0 || y > 7 ||
+	value < 0 || value > 1)
+	{
+		printf("Ошибка: заданы неправильные параметры для bc_setbigcharpos()\n");
+		return -1;	
+	}
 	if (value)
 	{
 		if (x < 4)
@@ -83,6 +95,11 @@ int bc_setbigcharpos (int * big, int x, int y, int value)
 }
 int bc_getbigcharpos(int * big, int x, int y, int *value)
 {
+	if (x < 0 || x > 7 || y < 0 || y > 7)
+	{
+		printf("Ошибка: заданы неправильные параметры для bc_getbigcharpos()\n");
+		return -1;	
+	}
 	if (x < 4)
 	{
 		*value = (big[0] >> (x * 8 + y)) & 1;
@@ -96,12 +113,17 @@ int bc_getbigcharpos(int * big, int x, int y, int *value)
 }
 int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors color2)
 { //"в строке x и столбце y"
-	/*int qew = 2147483647;
+	int qew = 2147483647;
    	if (qew != 2147483647)
    	{
    		printf("Ошибка: int не четырехбитовый \n");
    		return -1;
-   	}*/
+   	}
+   	if (x < 0 || y < 0)
+	{
+		printf("Ошибка: заданы неправильные параметры для bc_printbigchar()\n");
+		return -1;	
+	}
 	int i, u, value;
 	for (i = 0; i < 8; i++)
 	{
@@ -146,12 +168,12 @@ int main()
     printf("cnt == %d, arrbig[22] == %d, [23] == %d\n", cnt, arrbig[22], arrbig[23]);
 
     
-    int big[2] = {0}, i, x1 = 2, y1 = 4, flag = 1;
+    int big[2] = {0}, i, x1 = 2, y1 = 4;
     x1 = 2; y1 = 4;
     for (i = 0; i < 24; i += 2)
     {
     	if (i == 12)
-    		x1 += 10, y1 = 4, flag = 0; 
+    		x1 += 10, y1 = 4; 
     		
     	mt_gotoXY(x1, y1);
     	printf("i==%d", i);
@@ -163,12 +185,15 @@ int main()
     
     
    
-    
+    bc_setbigcharpos(big, 2, 2, 3);
+    bc_box(0, 2, 4, 4);
+    bc_getbigcharpos(big, -1, 3, &i);
 
-	mt_gotoXY(22,1);	
+	mt_gotoXY(27,1);	
     /*printf("%d %d \n", arrbig[0], arrbig[1]);
     int file = open("bigchars.txt", O_RDWR | O_CREAT);
     bc_bigcharwrite (file, arrbig, 12);*/
+    
     
     printf("\n");
     return 0;
