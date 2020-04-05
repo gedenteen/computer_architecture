@@ -111,7 +111,7 @@ int bc_getbigcharpos(int * big, int x, int y, int *value)
 	}
 	return 0;
 }
-int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors color2)
+int bc_printbigchar (int big[2], int x, int y, enum colors fclr, enum colors bclr)
 { //"в строке x и столбце y"
 	int qew = 2147483647;
    	if (qew != 2147483647)
@@ -124,6 +124,8 @@ int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors c
 		printf("Ошибка: заданы неправильные параметры для bc_printbigchar()\n");
 		return -1;	
 	}
+	mt_setbgcolor(bclr);
+	mt_setfgcolor(fclr);
 	int i, u, value;
 	for (i = 0; i < 8; i++)
 	{
@@ -136,8 +138,9 @@ int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors c
 			else
 				bc_printA(" ");
 		}
-	
 	}
+	mt_setbgcolor(RESET);
+	mt_setfgcolor(WHITE);
 	return 0;
 }
 int bc_bigcharwrite (int fd, int * big, int count)
@@ -178,7 +181,7 @@ int main()
     	mt_gotoXY(x1, y1);
     	printf("i==%d", i);
     	big[0] = arrbig[i], big[1] = arrbig[i+1];
-    	bc_printbigchar(big, x1+1, y1, WHITE, YELLOW);
+    	bc_printbigchar(big, x1+1, y1, BLUE, RESET);
     	
     	y1 += 10;
     }
