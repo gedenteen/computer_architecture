@@ -1,6 +1,6 @@
 COMP = gcc
 FLAGS = -Wall -o
-OBJS = main.c ../lab1/mySimpleComputer.c ../lab2/myTerm.c
+OBJS = main.c ../lab1/mySimpleComputer.c ../lab2/myTerm.c myBigChars.c
 
 .PHONY: clean run all
 
