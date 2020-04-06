@@ -2,7 +2,6 @@
 #include "../lab2/myTerm.h"
 #include "myBigChars.h"
 
-
 int bc_printA(char *str)
 {
 	printf("\E(0");
@@ -245,28 +244,6 @@ int bc_showinterface()
 	printf("F5 - accumulator");
 	mt_gotoXY(20, 48);
 	printf("F6 - instructionCounter");
-
-
-	/*mt_setbgcolor(RESET);
-	mt_setfgcolor(YELLOW);
-	printf("\n Keys: \n");
-	mt_setfgcolor(WHITE);
-	printf(" l  - load \n");
-	printf(" s  - save \n");
-	printf(" r  - run \n");
-	printf(" t  - step \n");
-	printf(" i  - reset \n");
-	printf(" F5 - accumulator \n");
-	printf(" F6 - instructionCounter \n");
-	mt_setfgcolor(YELLOW);
-	mt_gotoXY(18, 30); printf("Registers: \n");
-	mt_setfgcolor(WHITE);
-	mt_gotoXY(19, 30); printf("OVERFLOW == 1 \n");
-	mt_gotoXY(20, 30); printf("DIVISON_BY_ZERO == 2 \n");
-	mt_gotoXY(21, 30); printf("GOING_BEYOND_MEMORY == 3 \n");
-	mt_gotoXY(22, 30); printf("GNORING_CLOCK_PULSES == 4 \n");
-	mt_gotoXY(23, 30); printf("WRONG_COMMAND == 5 \n");
-	mt_gotoXY(25, 0);*/
-
+	
 	return 0;
 }
