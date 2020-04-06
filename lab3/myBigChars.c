@@ -154,3 +154,119 @@ int bc_bigcharread (int fd, int * big, int need_count, int * count)
             return -1;
     return 0;
 }
+int bc_showinterface()
+{
+	int i, x1 = 1, y1 = 2; 
+	bc_box(1, 1, 12, 61); //память
+	mt_setfgcolor(YELLOW);
+	mt_gotoXY(1, 25);
+	printf(" Memory: ");
+	mt_setbgcolor(RESET);
+	mt_setfgcolor(WHITE);
+	for (i = 0; i < 100; i++) {
+		if (i % 10 == 0)
+			x1++, y1 = 2;
+		mt_gotoXY(x1, y1);
+		if (ram[i] < 0)
+			mt_setbgcolor(BLUE);
+		if (ram[i] > 0)	
+			mt_setbgcolor(RED);
+		if (ram[i] >= 0)
+			printf("+"); 
+		printf("%4.4d", ram[i]);
+		mt_setbgcolor(RESET);
+		y1 += 6;
+	}
+	mt_setbgcolor(RESET); //рамки
+	bc_box(1, 62, 3, 85); 
+	bc_box(4, 62, 6, 85); 
+	bc_box(7, 62, 9, 85); 
+	bc_box(10, 62, 12, 85);
+	bc_box(13, 1, 23, 46); 
+	bc_box(13, 47, 23, 85);
+	mt_setfgcolor(YELLOW); //названия
+	mt_gotoXY(1, 67);
+	printf(" accumulator ");
+	mt_gotoXY(4, 64);
+	printf(" instructionCounter ");
+	mt_gotoXY(7, 69);
+	printf(" Operation ");
+	mt_gotoXY(10, 71);
+	printf(" Flags ");
+	mt_gotoXY(13, 49);
+	printf(" Keys ");
+	int accum = 0, instcnt = 1; //содержимое
+	mt_setfgcolor(WHITE);
+	mt_gotoXY(2, 71);
+	if (accum >= 0)
+		printf("+");
+	printf("%4.4d", accum);
+	mt_gotoXY(5, 71);
+	if (accum >= 0)
+		printf("+");
+	printf("%4.4d", instcnt);
+	mt_gotoXY(8, 70);
+	printf("+00 : 00");
+	mt_gotoXY(11, 70);
+	printf(" O E V M ");
+
+	int file2 = open("bigchars.txt", O_RDONLY); //бигчары
+	int cnt = 0, arrbig[24] = {0}, big[2] = {0};
+	bc_bigcharread(file2, arrbig, 12, &cnt);
+	if (instcnt >= 0)
+		big[0] = arrbig[20], big[1] = arrbig[21];
+	else
+		big[0] = arrbig[22], big[1] = arrbig[23];
+	bc_printbigchar(big, 14, 2, WHITE, RESET);
+	int temp = instcnt % 10000 / 1000;
+	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+	bc_printbigchar(big, 14, 11, WHITE, RESET);
+	temp = instcnt % 1000 / 100;
+	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+	bc_printbigchar(big, 14, 20, WHITE, RESET);
+	temp = instcnt % 100 / 10;
+	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+	bc_printbigchar(big, 14, 29, WHITE, RESET);
+	temp = instcnt % 10;
+	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+	bc_printbigchar(big, 14, 38, WHITE, RESET);
+
+	mt_gotoXY(14, 48);
+	printf("l - load");
+	mt_gotoXY(15, 48);
+	printf("s - save");
+	mt_gotoXY(16, 48);
+	printf("r - run");
+	mt_gotoXY(17, 48);
+	printf("t - step");
+	mt_gotoXY(18, 48);
+	printf("i - reset");
+	mt_gotoXY(19, 48);
+	printf("F5 - accumulator");
+	mt_gotoXY(20, 48);
+	printf("F6 - instructionCounter");
+
+
+	/*mt_setbgcolor(RESET);
+	mt_setfgcolor(YELLOW);
+	printf("\n Keys: \n");
+	mt_setfgcolor(WHITE);
+	printf(" l  - load \n");
+	printf(" s  - save \n");
+	printf(" r  - run \n");
+	printf(" t  - step \n");
+	printf(" i  - reset \n");
+	printf(" F5 - accumulator \n");
+	printf(" F6 - instructionCounter \n");
+	mt_setfgcolor(YELLOW);
+	mt_gotoXY(18, 30); printf("Registers: \n");
+	mt_setfgcolor(WHITE);
+	mt_gotoXY(19, 30); printf("OVERFLOW == 1 \n");
+	mt_gotoXY(20, 30); printf("DIVISON_BY_ZERO == 2 \n");
+	mt_gotoXY(21, 30); printf("GOING_BEYOND_MEMORY == 3 \n");
+	mt_gotoXY(22, 30); printf("GNORING_CLOCK_PULSES == 4 \n");
+	mt_gotoXY(23, 30); printf("WRONG_COMMAND == 5 \n");
+	mt_gotoXY(25, 0);*/
+
+	return 0;
+}

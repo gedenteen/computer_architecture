@@ -11,5 +11,6 @@ int bc_getbigcharpos(int * big, int x, int y, int *value);
 int bc_printbigchar (int big[2], int x, int y, enum colors fclr, enum colors bclr);
 int bc_bigcharwrite (int fd, int * big, int count);
 int bc_bigcharread (int fd, int * big, int need_count, int * count);
+int bc_showinterface();
 
 #endif
