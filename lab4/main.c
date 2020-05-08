@@ -27,9 +27,11 @@ int main()
 //    scanf("%c %c", &qwer, &qwer);
 //    printf("\E(B");
     mt_clrscr();
-    enum keys key = 0;
+    enum keys key = -1;
     rk_readkey(&key);
     printf(" %d \n", key);
+    rk_mytermsave();
+    rk_mytermrestore();
 
 
 	return 0;

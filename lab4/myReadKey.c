@@ -47,3 +47,13 @@ int rk_readkey (enum keys *key)
     tcsetattr (0, TCSAFLUSH, &savetty); //Восстановление канонического режима ввода
     return 0;
 }
+
+int rk_mytermsave()
+{
+    return tcsetattr(STDOUT_FILENO, TCSANOW, &tty);
+}
+
+int rk_mytermrestore()
+{
+    return tcsetattr(STDOUT_FILENO, TCSANOW, &savetty);
+}
