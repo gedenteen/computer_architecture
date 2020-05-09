@@ -12,7 +12,7 @@ int mt_clrscr(void)
 int mt_getscreensize (int * rows, int * cols)
 {
 	struct winsize w;
-	if ( !ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) ) 
+	if ( !ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) )
 	{
 		*rows = w.ws_row;
 		*cols = w.ws_col;
@@ -21,7 +21,7 @@ int mt_getscreensize (int * rows, int * cols)
 	{
 		printf("Ошибка при выполнении команды ioctl \n");
 		return -1;
-	} 
+	}
 
 }
 
@@ -32,11 +32,11 @@ int mt_gotoXY (int y, int x)
 	if (y > rows || x > cols)
 	{
 		printf("Ошибка: указана строка и/или столбец, превышающие размер(%d, %d) терминала\n", x, y);
-		return -1;	
-	}	
+		return -1;
+	}
 
 	printf("\e[%d;%dH", y, x);
-	
+
 	return 0;
 }
 
@@ -44,7 +44,7 @@ int mt_setfgcolor (enum colors color)
 {
 	if (color == RESET)
 		printf("\e[0m");
-	printf("\e[3%dm", color);
+	printf("\e[9%dm", color);
 	return 0;
 }
 
@@ -66,10 +66,10 @@ int mt_showinterface ()
 	for (i = 0; i < 100; i++) {
 		if (ram[i] < 0)
 			mt_setbgcolor(BLUE);
-		if (ram[i] > 0)	
+		if (ram[i] > 0)
 			mt_setbgcolor(RED);
 		if (ram[i] >= 0)
-			printf("+"); 
+			printf("+");
 		printf("%4.4d ", ram[i]);
 		if ((i + 1) % 10 == 0)
 			printf("\n");
@@ -95,6 +95,6 @@ int mt_showinterface ()
 	mt_gotoXY(22, 30); printf("GNORING_CLOCK_PULSES == 4 \n");
 	mt_gotoXY(23, 30); printf("WRONG_COMMAND == 5 \n");
 	mt_gotoXY(25, 0);
-	
+
 	return 0;
 }
