@@ -10,7 +10,7 @@
 struct termios savetty; //объявление двух переменных для
 struct termios tty; //хранения управляющих структур
 
-struct termios current, backup;
+typedef enum {false, true} bool;
 
 enum keys
 {
@@ -32,5 +32,6 @@ int rk_readkey (enum keys *key);
 int rk_mytermsave (void);
 int rk_mytermrestore (void) ;
 int rk_mytermregime (int regime, int vtime, int vmin, int echo, int sigint);
+int rk_interface();
 
 #endif
