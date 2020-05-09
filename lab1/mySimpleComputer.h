@@ -10,6 +10,7 @@
 #define WRONG_COMMAND 5
 
 int ram[100], registr;
+int accumulator, instructionCounter;
 
 int sc_memoryInit();
 int sc_memorySet(int address, int value);

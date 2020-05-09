@@ -27,7 +27,7 @@ int bc_box(int x1, int y1, int x2, int y2)
 	for (i = y1 + 1; i <= y2 - 1; i++)
 	{
 		mt_gotoXY(x1, i);
-		bc_printA("r");
+		bc_printA("q");
 	}
 	mt_gotoXY(x1, y2);
 	bc_printA("k"); //правый верхний
@@ -43,7 +43,7 @@ int bc_box(int x1, int y1, int x2, int y2)
 	for (i = y1 + 1; i <= y2 - 1; i++)
 	{
 		mt_gotoXY(x2, i);
-		bc_printA("r");
+		bc_printA("q");
 	}
 	mt_gotoXY(x2, y2);
 	bc_printA("j"); //правый нижний*/
