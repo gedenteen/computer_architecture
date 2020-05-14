@@ -96,6 +96,8 @@ int ms_interface()
 	printf("F5 - accumulator");
 	mt_gotoXY(20, 48);
 	printf("F6 - instructionCounter");
+	mt_gotoXY(21, 48);
+	printf("q - quit");
 
 	int file2 = open("../lab3/bigchars.txt", O_RDONLY); //бигчары
 	int cnt = 0, arrbig[24] = {0}, big[2] = {0};
@@ -150,6 +152,9 @@ int ms_keyhandler(enum keys key)
             break;
         case KEY_I:
             ms_signalhandler(SIGUSR1);
+            break;
+        case KEY_Q:
+            return 1;
             break;
         default:
             break;

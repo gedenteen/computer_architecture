@@ -43,6 +43,8 @@ int rk_readkey (enum keys *key)
         *key = KEY_LEFT;
     else if (!strcmp(buf, "\n"))
         *key = KEY_ENTER;
+    else if (!strcmp(buf, "q"))
+        *key = KEY_Q;
 
     tcsetattr (0, TCSAFLUSH, &savetty); //Восстановление канонического режима ввода
     return 0;

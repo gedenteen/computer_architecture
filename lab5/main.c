@@ -36,7 +36,8 @@ int main()
         //pause();
         enum keys key = -1;
         rk_readkey(&key);
-        ms_keyhandler(key);
+        if (ms_keyhandler(key) == 1)
+            i = 14;
         i++;
     }
 
