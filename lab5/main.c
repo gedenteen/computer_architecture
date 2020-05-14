@@ -20,19 +20,27 @@ int main()
     nval.it_value.tv_usec = 0;
 
     /* Запускаем таймер */
-    setitimer (ITIMER_REAL, &nval, &oval);
+    //setitimer (ITIMER_REAL, &nval, &oval);
 
     sc_memoryInit();
     sc_regInit();
     int i = 0;
     mt_clrscr();
-    while (i != 3){
+
+    ram[12] = 12;
+    instructionCounter = 20;
+    accumulator = 22;
+
+    while (i != 15) {
         ms_interface();
-        pause();
+        //pause();
+        enum keys key = -1;
+        rk_readkey(&key);
+        ms_keyhandler(key);
         i++;
     }
 
-    return (0);
+    return 0;
 }
 
 

@@ -117,7 +117,42 @@ int ms_interface()
 	temp = instructionCounter % 10;
 	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
 	bc_printbigchar(big, 14, 38, WHITE, RESET);
-	mt_gotoXY(23, 1);
+	mt_gotoXY(24, 1);
 
 	return 0;
+}
+
+int ms_keyhandler(enum keys key)
+{
+    switch (key)
+    {
+        case KEY_L:
+            sc_memoryLoad("file.dat");
+            break;
+        case KEY_S:
+            sc_memorySave("file.dat");
+            break;
+        case KEY_LEFT:
+            if (memy > 0) //это по горизонтали
+                memy--;
+            break;
+        case KEY_RIGHT:
+            if (memy < 9)
+                memy++;
+            break;
+        case KEY_UP:
+            if (memx > 0)
+                memx--;
+            break;
+        case KEY_DOWN:
+            if (memx < 9)
+                memx++;
+            break;
+        case KEY_I:
+            ms_signalhandler(SIGUSR1);
+            break;
+        default:
+            break;
+    }
+    return 0;
 }
