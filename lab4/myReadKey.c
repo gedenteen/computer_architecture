@@ -11,10 +11,8 @@ int rk_readkey (enum keys *key)
     };
 
     tcgetattr (0, &tty); //функция получения установки терминала
-    savetty = tty; /* Сохранить упр. информацию канонического режима */
-    tty.c_lflag &= ~(ICANON|ECHO|ISIG);
-    tty.c_cc[VMIN] = 1;
-    tcsetattr (0, TCSAFLUSH, &tty); //Перевод драйвера клавиатуры в неканонический режим ввода
+    rk_mytermsave(); /* Сохранить упр. информацию канонического режима */
+    rk_mytermregime(0, 10, 0, 0, 0); //неканоничный режим работы
 
     char buf[10] = "\0";
     read(STDIN_FILENO, buf, 10);
@@ -43,14 +41,17 @@ int rk_readkey (enum keys *key)
         *key = KEY_LEFT;
     else if (!strcmp(buf, "\n"))
         *key = KEY_ENTER;
+    else if (!strcmp(buf, "q"))
+        *key = KEY_Q;
 
-    tcsetattr (0, TCSAFLUSH, &savetty); //Восстановление канонического режима ввода
+    rk_mytermrestore(); //Восстановление канонического режима ввода
     return 0;
 }
 
 int rk_mytermsave()
 {
-    return tcsetattr(STDOUT_FILENO, TCSANOW, &tty);
+    savetty = tty;
+    return 0;
 }
 
 int rk_mytermrestore()
@@ -63,23 +64,24 @@ int rk_mytermregime(int regime, int vtime, int vmin, int echo, int sigint)
     if (tcgetattr(STDOUT_FILENO, &tty))
         return 1;
 
-    if (regime)
+    if (regime) //неканонический вид терминала
         tty.c_lflag |= ICANON;
     else tty.c_lflag &= ~ICANON;
 
-    if (echo)
+    if (echo) //отображать вводимые символы
         tty.c_lflag |= ECHO;
     else tty.c_lflag &= ~ECHO;
 
-    if (sigint)
+    if (sigint) //сигнал для символов из INTR, QUIT, SUSP или DSUSP
         tty.c_lflag |= ISIG;
     else tty.c_lflag &= ~ISIG;
 
-    tty.c_cc[VTIME] = vtime;
-    tty.c_cc[VMIN] = vmin;
+    tty.c_cc[VTIME] = vtime; //время ожидания в децисекундах
+    tty.c_cc[VMIN] = vmin; //минимальное кол-во символов
 
     return tcsetattr(STDOUT_FILENO, TCSANOW, &tty);
 }
+
 int rk_interface()
 {
 	int i, x1 = 1, y1 = 2;

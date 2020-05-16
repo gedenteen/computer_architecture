@@ -119,7 +119,7 @@ int sc_regGet(int reg, int *value) {
     return 1;
     break;
   }
-  printf("Значение флага сохранено в value \n");
+  //printf("Значение флага сохранено в value \n");
   return 0;
 }
 int sc_commandEncode(int command, int operand, int *value) {
