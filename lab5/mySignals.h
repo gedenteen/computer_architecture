@@ -8,7 +8,7 @@
 int memx, memy;
 
 int ms_signalhandler();
-int ms_timer();
+int ms_run();
 int ms_interface();
 int ms_keyhandler();
 

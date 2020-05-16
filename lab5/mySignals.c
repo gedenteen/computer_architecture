@@ -26,9 +26,33 @@ int ms_signalhandler(int msignal)
     return 0;
 }
 
-int ms_timer()
+int ms_run()
 {
+    struct itimerval nval, oval;
+    signal (SIGALRM, ms_signalhandler);
 
+    nval.it_interval.tv_sec = 1;
+    nval.it_interval.tv_usec = 000;
+    nval.it_value.tv_sec = 1;
+    nval.it_value.tv_usec = 0;
+
+    /* Запускаем таймер */
+    setitimer (ITIMER_REAL, &nval, &oval);
+
+    instructionCounter = 0;
+    memx = memy = 0;
+    //sc_regSet(IGNORING_CLOCK_PULSES, 1);
+    while (instructionCounter <= 100)
+    {
+        ms_interface();
+        pause();
+        memy++;
+        if (memy % 10 == 0)
+        memy = 0, memx++;
+        //instructionCounter++;
+    }
+
+    return 0;
 }
 
 int ms_interface()
@@ -155,6 +179,9 @@ int ms_keyhandler(enum keys key)
             break;
         case KEY_Q:
             return 1;
+            break;
+        case KEY_R:
+            ms_run();
             break;
         default:
             break;
