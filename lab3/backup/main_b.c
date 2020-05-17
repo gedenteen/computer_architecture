@@ -1,5 +1,5 @@
-#include "../lab1/mySimpleComputer.h"
-#include "../lab2/myTerm.h"
+#include "../../lab1/mySimpleComputer.h"
+#include "../../lab2/myTerm.h"
 #include <stdio.h>
 //#include <math.h>
 //#include <io.h>
@@ -13,7 +13,7 @@ int bc_printA(char *str)
     printf("\E(B");
 	return 0;
 }
-int bc_box(int x1, int y1, int x2, int y2) 
+int bc_box(int x1, int y1, int x2, int y2)
 {
 	/*
 	"левый верхний угол располагается в строке x1 и столбце
@@ -35,7 +35,7 @@ int bc_box(int x1, int y1, int x2, int y2)
 		bc_printA("x");
 		mt_gotoXY(i, y2);
 		bc_printA("x");
-	} 
+	}
 	mt_gotoXY(x2, y1);
 	bc_printA("m"); //левый нижний
 	for (i = y1 + 1; i <= y2 - 1; i++)
@@ -56,7 +56,7 @@ int bc_setbigcharpos (int * big, int x, int y, int value)
 			value = 1 << (x * 8 + y);
 			big[0] = big[0] | value;
 		}
-		else 
+		else
 		{
 			x -= 4;
 			value = 1 << (x * 8 + y);
@@ -71,7 +71,7 @@ int bc_setbigcharpos (int * big, int x, int y, int value)
 			value = ~value; //побитовая инверсия
 			big[0] = big[0] & value;
 		}
-		else 
+		else
 		{
 			x -= 4;
 			value = 1 << (x * 8 + y);
@@ -87,7 +87,7 @@ int bc_getbigcharpos(int * big, int x, int y, int *value)
 	{
 		*value = (big[0] >> (x * 8 + y)) & 1;
 	}
-	else 
+	else
 	{
 		x -= 4;
 		*value = (big[1] >> (x * 8 + y)) & 1;
@@ -114,7 +114,7 @@ int bc_printbigchar (int big[2], int x, int y, enum colors color1, enum colors c
 			else
 				bc_printA(" ");
 		}
-	
+
 	}
 	return 0;
 }
@@ -148,9 +148,9 @@ int main()
     printf("\E(B");
 
     mt_clrscr();
-    bc_box(1, 3, 21, 70);
+    bc_box(1, 3, 31, 70);
 
-    int arrbig[24] = {0};
+    int arrbig[36] = {0};
     arrbig[0] = 1 + 2 + 64 + 128;
     arrbig[0] <<=  8;
     arrbig[0] += 1 + 2 + 64 + 128;
@@ -169,7 +169,7 @@ int main()
     mt_gotoXY(2,4);
     printf("12345678");
     bc_printbigchar(arrbig, 3, 4, WHITE, YELLOW);
-    
+
     int big[2] = {0};
     arrbig[2] = 8 + 16;
     arrbig[2] <<=  8;
@@ -189,7 +189,7 @@ int main()
     printf("12345678");
     big[0] = arrbig[2], big[1] = arrbig[3];
     bc_printbigchar(big, 3, 14, WHITE, YELLOW);
-    
+
     arrbig[4] = 64 + 128;
     arrbig[4] <<=  8;
     arrbig[4] += 64 + 128;
@@ -209,7 +209,7 @@ int main()
     printf("12345678");
     big[0] = arrbig[4], big[1] = arrbig[5];
     bc_printbigchar(big, 3, 24, WHITE, YELLOW);
-    
+
     arrbig[6] = 2 + 4 + 8 + 16 + 32 + 64; //aaaaaaaaaaaaaaa
     arrbig[6] <<=  8;
     arrbig[6] += 64 + 128;
@@ -229,7 +229,7 @@ int main()
     printf("12345678");
     big[0] = arrbig[6], big[1] = arrbig[7];
     bc_printbigchar(big, 3, 34, WHITE, YELLOW);
-    
+
     arrbig[8] = 1 + 2 + 4 + 8 + 16 + 32 + 64  + 128 ; //aaaaaaaaaaaaaaa
     arrbig[8] <<=  8;
     arrbig[8] += 1 +2+ 64+128 ;
@@ -249,7 +249,7 @@ int main()
     printf("12345678");
     big[0] = arrbig[8], big[1] = arrbig[9];
     bc_printbigchar(big, 3, 44, WHITE, YELLOW);
-    
+
     arrbig[10] = 2 + 4 + 8 + 16 + 32 + 64 ; //aaaaaaaaaaaaaaa
     arrbig[10] <<=  8;
     arrbig[10] += 1 +2;
@@ -269,7 +269,7 @@ int main()
     printf("12345678");
     big[0] = arrbig[10], big[1] = arrbig[11];
     bc_printbigchar(big, 3, 54, WHITE, YELLOW);
-    
+
     arrbig[12] = 1+2+4+8+16+32+64 ; //aaaaaaaaaaaaaaa
     arrbig[12] <<=  8;
     arrbig[12] += 1+2;
@@ -289,8 +289,8 @@ int main()
     printf("12345678");
     big[0] = arrbig[12], big[1] = arrbig[13];
     bc_printbigchar(big, 13, 4, WHITE, YELLOW);
-    
-    arrbig[14] = 32+64; 
+
+    arrbig[14] = 32+64;
     arrbig[14] <<=  8;
     arrbig[14] += 32+64;
     arrbig[14] <<=  8;
@@ -302,15 +302,15 @@ int main()
     arrbig[15] <<=  8;
     arrbig[15] += 8+16;
     arrbig[15] <<=  8;
-    arrbig[15] += 16+32; 
+    arrbig[15] += 16+32;
     arrbig[15] <<=  8;
     arrbig[15] += 16+32;
     mt_gotoXY(12, 14);
     printf("12345678");
     big[0] = arrbig[14], big[1] = arrbig[15];
     bc_printbigchar(big, 13, 14, WHITE, YELLOW);
-    
-    arrbig[16] = 2 + 4 + 8 + 16 + 32 + 64; 
+
+    arrbig[16] = 2 + 4 + 8 + 16 + 32 + 64;
     arrbig[16] <<=  8;
     arrbig[16] += 1+2+64+128;
     arrbig[16] <<=  8;
@@ -322,74 +322,194 @@ int main()
     arrbig[17] <<=  8;
     arrbig[17] += 1+2+64+128;
     arrbig[17] <<=  8;
-    arrbig[17] += 1+2+64+128; 
+    arrbig[17] += 1+2+64+128;
     arrbig[17] <<=  8;
     arrbig[17] += 1+2+64+128;
     mt_gotoXY(12, 24);
     printf("12345678");
     big[0] = arrbig[16], big[1] = arrbig[17];
     bc_printbigchar(big, 13, 24, WHITE, YELLOW);
-    
-    arrbig[18] = 1+2+64+128; 
+
+    arrbig[18] = 1+2+64+128;
     arrbig[18] <<=  8;
     arrbig[18] += 1+2+64+128;
     arrbig[18] <<=  8;
     arrbig[18] += 1+2+64+128;
     arrbig[18] <<=  8;
-    arrbig[18] += 2 + 4 + 8 + 16 + 32 + 64; 
+    arrbig[18] += 2 + 4 + 8 + 16 + 32 + 64;
     ///////////
-    arrbig[19] =  2 + 4 + 8 + 16 + 32 + 64; 
+    arrbig[19] =  2 + 4 + 8 + 16 + 32 + 64;
     arrbig[19] <<=  8;
     arrbig[19] += 64+128;
     arrbig[19] <<=  8;
-    arrbig[19] += 64+128; 
+    arrbig[19] += 64+128;
     arrbig[19] <<=  8;
     arrbig[19] += 2 + 4 + 8 + 16 + 32 + 64+128;
     mt_gotoXY(12, 34);
     printf("12345678");
     big[0] = arrbig[18], big[1] = arrbig[19];
     bc_printbigchar(big, 13, 34, WHITE, YELLOW);
-    
-    arrbig[20] = 1+2 + 4 + 8 + 16 + 32+64+128; 
+
+    arrbig[20] = 1+2+64+128; //A
     arrbig[20] <<=  8;
-    arrbig[20] += 8+16;
+    arrbig[20] += 1+2+64+128;
     arrbig[20] <<=  8;
-    arrbig[20] += 8+16;
+    arrbig[20] += 1+2+64+128;
     arrbig[20] <<=  8;
-    arrbig[20] += 0; 
+    arrbig[20] += 2+4+8+16+32+64;
     ///////////
-    arrbig[21] =  0; 
+    arrbig[21] =  1+2+64+128;
     arrbig[21] <<=  8;
-    arrbig[21] += 0;
+    arrbig[21] += 1+2+64+128;
     arrbig[21] <<=  8;
-    arrbig[21] += 8+16; 
+    arrbig[21] += 1+2+64+128;
     arrbig[21] <<=  8;
-    arrbig[21] += 8+16;
+    arrbig[21] += 1+2+4+8+16+32+64+128;
     mt_gotoXY(12, 44);
     printf("12345678");
     big[0] = arrbig[20], big[1] = arrbig[21];
     bc_printbigchar(big, 13, 44, WHITE, YELLOW);
-    
-    arrbig[22] = 1+2 + 4 + 8 + 16 + 32+64+128; 
-    arrbig[22] <<= 24;
+
+    arrbig[22] = 1+2 + 4 + 8 + 16 + 32 + 64; //B
+    arrbig[22] <<=  8;
+    arrbig[22] += 1+2+64 + 128;
+    arrbig[22] <<=  8;
+    arrbig[22] += 1+2+64 + 128;
+    arrbig[22] <<=  8;
+    arrbig[22] += 1+2 + 4 + 8 + 16 + 32 + 64;
     ///////////
-    arrbig[23] =  0; 
+    arrbig[23] = 1+2 + 4 + 8 + 16 + 32 + 64;
+    arrbig[23] <<=  8;
+    arrbig[23] += 1+2+64 + 128;
+    arrbig[23] <<=  8;
+    arrbig[23] += 1+2+64 + 128;
+    arrbig[23] <<=  8;
+    arrbig[23] += 1+2+64 + 128;
     mt_gotoXY(12, 54);
     printf("12345678");
     big[0] = arrbig[22], big[1] = arrbig[23];
     bc_printbigchar(big, 13, 54, WHITE, YELLOW);
-    
-   
-    
+
+    arrbig[24] = 1+2; //C
+    arrbig[24] <<=  8;
+    arrbig[24] += 1+2;
+    arrbig[24] <<=  8;
+    arrbig[24] += 2+4+128;
+    arrbig[24] <<=  8;
+    arrbig[24] += 4 + 8 + 16 + 32 + 64;
+    ///////////
+    arrbig[25] = 4 + 8 + 16 + 32 + 64;
+    arrbig[25] <<=  8;
+    arrbig[25] += 2+4+128;
+    arrbig[25] <<=  8;
+    arrbig[25] += 1+2;
+    arrbig[25] <<=  8;
+    arrbig[25] += 1+2;
+    mt_gotoXY(22, 4);
+    printf("12345678");
+    big[0] = arrbig[24], big[1] = arrbig[25];
+    bc_printbigchar(big, 23, 4, WHITE, YELLOW);
+
+    arrbig[26] = 1+2+64+128; //D
+    arrbig[26] <<=  8;
+    arrbig[26] += 1+2+64+128;
+    arrbig[26] <<=  8;
+    arrbig[26] += 1+2+32+64;
+    arrbig[26] <<=  8;
+    arrbig[26] += 1+2 + 4 + 8 + 16+32;
+    ///////////
+    arrbig[27] = 1+2 + 4 + 8 + 16+32;
+    arrbig[27] <<=  8;
+    arrbig[27] += 1+2+32+64;
+    arrbig[27] <<=  8;
+    arrbig[27] += 1+2+64+128;
+    arrbig[27] <<=  8;
+    arrbig[27] += 1+2+64 + 128;
+    mt_gotoXY(22, 14);
+    printf("12345678");
+    big[0] = arrbig[26], big[1] = arrbig[27];
+    bc_printbigchar(big, 23, 14, WHITE, YELLOW);
+
+    arrbig[28] = 255; //E
+    arrbig[28] <<=  8;
+    arrbig[28] += 1+2;
+    arrbig[28] <<=  8;
+    arrbig[28] += 1+2;
+    arrbig[28] <<=  8;
+    arrbig[28] += 255;
+    ///////////
+    arrbig[29] = 255;
+    arrbig[29] <<=  8;
+    arrbig[29] += 1+2;
+    arrbig[29] <<=  8;
+    arrbig[29] += 1+2;
+    arrbig[29] <<=  8;
+    arrbig[29] += 1+2;
+    mt_gotoXY(22, 24);
+    printf("12345678");
+    big[0] = arrbig[28], big[1] = arrbig[29];
+    bc_printbigchar(big, 23, 24, WHITE, YELLOW);
+
+    arrbig[30] = 1+2+4+8+16+32+64; //D
+    arrbig[30] <<=  8;
+    arrbig[30] += 1+2;
+    arrbig[30] <<=  8;
+    arrbig[30] += 1+2;
+    arrbig[30] <<=  8;
+    arrbig[30] += 255;
+    ///////////
+    arrbig[31] = 1+2;
+    arrbig[31] <<=  8;
+    arrbig[31] += 1+2;
+    arrbig[31] <<=  8;
+    arrbig[31] += 1+2;
+    arrbig[31] <<=  8;
+    arrbig[31] += 1+2;
+    mt_gotoXY(22, 34);
+    printf("12345678");
+    big[0] = arrbig[30], big[1] = arrbig[31];
+    bc_printbigchar(big, 23, 34, WHITE, YELLOW);
+
+    arrbig[32] = 1+2 + 4 + 8 + 16 + 32+64+128; //plus
+    arrbig[32] <<=  8;
+    arrbig[32] += 8+16;
+    arrbig[32] <<=  8;
+    arrbig[32] += 8+16;
+    arrbig[32] <<=  8;
+    arrbig[32] += 0;
+    ///////////
+    arrbig[33] =  0;
+    arrbig[33] <<=  8;
+    arrbig[33] += 0;
+    arrbig[33] <<=  8;
+    arrbig[33] += 8+16;
+    arrbig[33] <<=  8;
+    arrbig[33] += 8+16;
+    mt_gotoXY(22, 44);
+    printf("12345678");
+    big[0] = arrbig[32], big[1] = arrbig[33];
+    bc_printbigchar(big, 23, 44, WHITE, YELLOW);
+
+    arrbig[34] = 1+2 + 4 + 8 + 16 + 32+64+128; //minus
+    arrbig[34] <<= 24;
+    ///////////
+    arrbig[35] =  0;
+    mt_gotoXY(22, 54);
+    printf("12345678");
+    big[0] = arrbig[34], big[1] = arrbig[35];
+    bc_printbigchar(big, 23, 54, WHITE, YELLOW);
+
+
+
 
 	//arr[0] = 1;
-	mt_gotoXY(22,1);	
+	mt_gotoXY(32,1);
     printf("%d %d \n", arrbig[22], arrbig[23]);
     int file = open("bigchars.txt", O_RDWR | O_CREAT);
-    bc_bigcharwrite (file, arrbig, 12);
+    bc_bigcharwrite (file, arrbig, 18);
     int file2 = open("bigchars.txt", O_RDONLY);
     int cunt = 0, arr2[2] = {0};
-    bc_bigcharread(file2, arr2, 12, &cunt);
+    bc_bigcharread(file2, arr2, 18, &cunt);
     printf("%d %d", arr2[22], arr2[23]);
 
     printf("\n");
