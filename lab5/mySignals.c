@@ -49,7 +49,15 @@ int ms_run()
         memy++;
         if (memy % 10 == 0)
         memy = 0, memx++;
-        //instructionCounter++;
+        if ( _kbhit() )
+        {
+            enum keys key;
+            rk_readkey(&key);
+            if (key == KEY_Q)
+                return 1;
+            else
+                ms_keyhandler(key);
+        }
     }
 
     return 0;
@@ -124,8 +132,9 @@ int ms_interface()
 	printf("q - quit");
 
 	int file2 = open("../lab3/bigchars.txt", O_RDONLY); //бигчары
-	int cnt = 0, arrbig[24] = {0}, big[2] = {0};
-	bc_bigcharread(file2, arrbig, 12, &cnt);
+	int cnt = 0, arrbig[36] = {0}, big[2] = {0};
+	bc_bigcharread(file2, arrbig, 18, &cnt);
+        mt_gotoXY(23, 1); printf("%d", cnt);
 	if (instructionCounter >= 0)
 		big[0] = arrbig[20], big[1] = arrbig[21];
 	else
