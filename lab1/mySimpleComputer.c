@@ -131,7 +131,6 @@ int sc_commandEncode(int command, int operand, int *value) {
       *value = 0;
       *value = *value | (command << 7);
       *value = *value | operand;
-
     } else {
       //printf("Ошибка: указан неверный операнд \n");
       return 2;
@@ -144,19 +143,20 @@ int sc_commandEncode(int command, int operand, int *value) {
   return 0;
 }
 int sc_commandDecode(int value, int *command, int *operand) {
-  int temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
-  temp = temp << 7;
-  // printf("%d", temp);
-  if (value < 16384) // 2^14 = 32768, 15 бит - признак команды
+  int temp = 1;
+  temp = temp << 15; //одна единица на 15 бите
+  temp = temp & value; //конъюнкция
+  if (temp != 32768) // 2^15 = 32768, 15 бит - признак команды
   {
+    temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
+    temp = temp << 7;
     *command = (value & temp) >> 7;
-    printf("%d \n", *command);
     if ((*command >= 10 && *command <= 11) ||
         (*command >= 20 && *command <= 21) ||
         (*command >= 30 && *command <= 33) ||
         (*command >= 40 && *command <= 43) ||
         (*command >= 51 && *command <= 76)) {
-      temp = 256 - 1;
+      temp = 128 - 1;
       *operand = value & temp;
     } else {
       sc_regSet(WRONG_COMMAND, 1);
