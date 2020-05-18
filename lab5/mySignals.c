@@ -26,6 +26,24 @@ int ms_signalhandler(int msignal)
     return 0;
 }
 
+int ms_kbhit() {
+    static bool inited = false;
+    int left;
+
+    if (!inited) {
+        struct termios t;
+        tcgetattr(0, &t);
+        t.c_lflag &= ~ICANON;
+        tcsetattr(0, TCSANOW, &t);
+        setbuf(stdin, NULL);
+        inited = true;
+    }
+
+    ioctl(0, FIONREAD, &left);
+
+    return left;
+}
+
 int ms_run()
 {
     struct itimerval nval, oval;
@@ -49,7 +67,7 @@ int ms_run()
         memy++;
         if (memy % 10 == 0)
         memy = 0, memx++;
-        if ( _kbhit() )
+        if ( ms_kbhit() )
         {
             enum keys key;
             rk_readkey(&key);
