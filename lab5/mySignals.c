@@ -3,6 +3,7 @@
 #include "../lab3/myBigChars.h"
 #include "../lab4/myReadKey.h"
 #include "mySignals.h"
+#include "../course/myProcessor.h"
 
 int ms_signalhandler(int msignal)
 {
@@ -79,6 +80,13 @@ int ms_run()
     }
     return 0;
 }
+
+//int ms_step()
+//{
+//    int command, operand;
+//    int value = ram[instructionCounter];
+//
+//}
 
 int ms_converte_write(int value, char *sign, int *command, int *operand)
 {
@@ -238,19 +246,19 @@ int ms_keyhandler(enum keys key)
             break;
         case KEY_LEFT:
             if (memy > 0) //это по горизонтали
-                memy--;
+                memy--, instructionCounter--;
             break;
         case KEY_RIGHT:
             if (memy < 9)
-                memy++;
+                memy++, instructionCounter++;
             break;
         case KEY_UP:
             if (memx > 0)
-                memx--;
+                memx--, instructionCounter -= 10;
             break;
         case KEY_DOWN:
             if (memx < 9)
-                memx++;
+                memx++, instructionCounter += 10;
             break;
         case KEY_I:
             ms_signalhandler(SIGUSR1);
@@ -260,6 +268,9 @@ int ms_keyhandler(enum keys key)
             break;
         case KEY_R:
             ms_run();
+            break;
+        case KEY_T:
+            CU();
             break;
         default:
             break;

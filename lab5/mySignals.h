@@ -11,6 +11,7 @@ int ms_signalhandler();
 int ms_kbhit();
 int ms_run();
 int ms_converte_write(int value, char *sign, int *command, int *operand);
+void ms_interface_static();
 int ms_interface();
 int ms_keyhandler();
 

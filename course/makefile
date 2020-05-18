@@ -1,7 +1,7 @@
 COMP = gcc
 FLAGS = -Wall -o
 OBJS = main.c ../lab1/mySimpleComputer.c ../lab2/myTerm.c ../lab3/myBigChars.c \
-    ../lab4/myReadKey.c mySignals.c ../course/myProcessor.c
+    ../lab4/myReadKey.c ../lab5/mySignals.c myProcessor.c
 
 .PHONY: clean run all
 
