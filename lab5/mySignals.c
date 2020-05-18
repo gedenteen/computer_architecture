@@ -21,7 +21,7 @@ int ms_signalhandler(int msignal)
             memx = memy = 0;
             instructionCounter = 0;
             accumulator = 0;
-    }
+        }
     }
     return 0;
 }
@@ -49,39 +49,51 @@ int ms_run()
         memy++;
         if (memy % 10 == 0)
         memy = 0, memx++;
-        //instructionCounter++;
+        if ( _kbhit() )
+        {
+            enum keys key;
+            rk_readkey(&key);
+            if (key == KEY_Q)
+                return 1;
+            else
+                ms_keyhandler(key);
+        }
     }
-
     return 0;
 }
 
-int ms_interface()
+int ms_converte_write(int value, char *sign, int *command, int *operand)
 {
-	int i, x1 = -1, y1 = 0;
-	bc_box(1, 1, 12, 61); //память
-	mt_setfgcolor(YELLOW);
-	mt_gotoXY(1, 25);
-	printf(" Memory: ");
-	mt_setbgcolor(RESET);
-	for (i = 0; i < 100; i++) {
-		if (i % 10 == 0)
-			x1++, y1 = 0;
-		mt_gotoXY(x1 + 2, y1 * 6 + 2);
-		if (x1 == memx && y1 == memy)
-            mt_setbgcolor(YELLOW);
-        printf("+");
-        printf("%04d", ram[i] % 10000);
-		mt_setbgcolor(RESET);
-		y1++;
-	}
-	mt_setbgcolor(RESET); //рамки
+    int temp = 1;
+    temp = temp << 15; //одна единица на 15 бите
+    temp = temp & value; //конъюнкция
+    if (temp != 32768) // 2^15 = 32768, 15 бит - признак команды
+        *sign = '+', printf("+");
+    else
+        *sign = '-', printf("-");
+    temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
+    temp = temp << 7;
+    *command = (value & temp) >> 7;
+    temp = 128 - 1;
+    *operand = value & temp;
+    printf("%02X%02X", *command, *operand);
+    return 0;
+}
+
+void ms_interface_static()
+{
+    mt_setbgcolor(RESET); //рамки
+    bc_box(1, 1, 12, 61);
 	bc_box(1, 62, 3, 85);
 	bc_box(4, 62, 6, 85);
 	bc_box(7, 62, 9, 85);
 	bc_box(10, 62, 12, 85);
 	bc_box(13, 1, 22, 46);
 	bc_box(13, 47, 22, 85);
+
 	mt_setfgcolor(YELLOW); //названия
+	mt_gotoXY(1, 25);
+	printf(" Memory: ");
 	mt_gotoXY(1, 67);
 	printf(" accumulator ");
 	mt_gotoXY(4, 64);
@@ -92,20 +104,8 @@ int ms_interface()
 	printf(" Flags ");
 	mt_gotoXY(13, 49);
 	printf(" Keys ");
-	mt_setfgcolor(WHITE); //содержимое
-	mt_gotoXY(2, 71);
-	if (accumulator >= 0)
-		printf("+");
-	printf("%4.4d", accumulator);
-	mt_gotoXY(5, 71);
-	if (instructionCounter >= 0)
-		printf("+");
-	printf("%4.4d", instructionCounter);
-	mt_gotoXY(8, 70);
-	printf("+00 : 00");
-	mt_gotoXY(11, 70);
-	printf(" O E V M ");
 
+	mt_setfgcolor(WHITE); //содержимое keys
 	mt_gotoXY(14, 48);
 	printf("l - load");
 	mt_gotoXY(15, 48);
@@ -122,29 +122,89 @@ int ms_interface()
 	printf("F6 - instructionCounter");
 	mt_gotoXY(21, 48);
 	printf("q - quit");
+}
 
-	int file2 = open("../lab3/bigchars.txt", O_RDONLY); //бигчары
-	int cnt = 0, arrbig[24] = {0}, big[2] = {0};
-	bc_bigcharread(file2, arrbig, 12, &cnt);
-	if (instructionCounter >= 0)
-		big[0] = arrbig[20], big[1] = arrbig[21];
-	else
-		big[0] = arrbig[22], big[1] = arrbig[23];
-	bc_printbigchar(big, 14, 2, WHITE, RESET);
-	int temp = instructionCounter % 10000 / 1000;
-	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
-	bc_printbigchar(big, 14, 11, WHITE, RESET);
-	temp = instructionCounter % 1000 / 100;
-	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
-	bc_printbigchar(big, 14, 20, WHITE, RESET);
-	temp = instructionCounter % 100 / 10;
-	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
-	bc_printbigchar(big, 14, 29, WHITE, RESET);
-	temp = instructionCounter % 10;
-	big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
-	bc_printbigchar(big, 14, 38, WHITE, RESET);
-	mt_gotoXY(24, 1);
+int ms_interface()
+{
+	int i, x1 = -1, y1 = 0, command, operand;
+	char sign;
 
+	for (i = 0; i < 100; i++) {
+		if (i % 10 == 0)
+			x1++, y1 = 0;
+		mt_gotoXY(x1 + 2, y1 * 6 + 2);
+		if (x1 == memx && y1 == memy)
+            mt_setbgcolor(YELLOW);
+        ms_converte_write(ram[i], &sign, &command, &operand);
+        mt_setbgcolor(RESET);
+		y1++;
+	}
+
+	mt_setfgcolor(WHITE); //содержимое
+	mt_gotoXY(2, 71);
+	if (accumulator >= 0)
+		printf("+");
+	printf("%4.4d", accumulator);
+	mt_gotoXY(5, 71);
+	ms_converte_write(instructionCounter, &sign, &command, &operand);
+	mt_gotoXY(8, 70);
+	printf("+00 : 00");
+
+	mt_gotoXY(11, 68); //флаги
+	sc_regGet (OVERFLOW, &operand);
+	if (operand)
+        mt_setfgcolor(RED);
+    printf(" O");
+    mt_setfgcolor(RESET);
+    sc_regGet (DIVISON_BY_ZERO, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" Z");
+    mt_setfgcolor(RESET);
+    sc_regGet (GOING_BEYOND_MEMORY, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" M");
+    mt_setfgcolor(RESET);
+    sc_regGet (IGNORING_CLOCK_PULSES, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" I");
+    mt_setfgcolor(RESET);
+    sc_regGet (WRONG_COMMAND, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" C");
+    mt_setfgcolor(RESET);
+
+
+
+
+
+    mt_gotoXY(14, 2);
+    ms_converte_write(ram[memx*10+memy], &sign, &command, &operand);
+    int file2 = open("../lab3/bigchars.txt", O_RDONLY); //бигчары
+    int cnt = 0, arrbig[36] = {0}, big[2] = {0};
+    bc_bigcharread(file2, arrbig, 18, &cnt);
+    if (sign == '+')
+        big[0] = arrbig[32], big[1] = arrbig[33];
+    else
+        big[0] = arrbig[34], big[1] = arrbig[35];
+    bc_printbigchar(big, 14, 2, WHITE, RESET);
+    int temp = command / 16;
+    big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+    bc_printbigchar(big, 14, 11, WHITE, RESET);
+    temp = command % 16;
+    big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+    bc_printbigchar(big, 14, 20, WHITE, RESET);
+    temp = operand / 16;
+    big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+    bc_printbigchar(big, 14, 29, WHITE, RESET);
+    temp = operand % 16;
+    big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
+    bc_printbigchar(big, 14, 38, WHITE, RESET);
+
+	mt_gotoXY(23, 1);
 	return 0;
 }
 
