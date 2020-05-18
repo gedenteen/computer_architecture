@@ -21,7 +21,7 @@ int ms_signalhandler(int msignal)
             memx = memy = 0;
             instructionCounter = 0;
             accumulator = 0;
-    }
+        }
     }
     return 0;
 }
@@ -59,7 +59,6 @@ int ms_run()
                 ms_keyhandler(key);
         }
     }
-
     return 0;
 }
 
@@ -147,11 +146,40 @@ int ms_interface()
 		printf("+");
 	printf("%4.4d", accumulator);
 	mt_gotoXY(5, 71);
-	ms_converte_write(ram[i], &sign, &command, &operand);
+	ms_converte_write(instructionCounter, &sign, &command, &operand);
 	mt_gotoXY(8, 70);
 	printf("+00 : 00");
-	mt_gotoXY(11, 70);
-	printf(" O E V M ");
+
+	mt_gotoXY(11, 68); //флаги
+	sc_regGet (OVERFLOW, &operand);
+	if (operand)
+        mt_setfgcolor(RED);
+    printf(" O");
+    mt_setfgcolor(RESET);
+    sc_regGet (DIVISON_BY_ZERO, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" Z");
+    mt_setfgcolor(RESET);
+    sc_regGet (GOING_BEYOND_MEMORY, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" M");
+    mt_setfgcolor(RESET);
+    sc_regGet (IGNORING_CLOCK_PULSES, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" I");
+    mt_setfgcolor(RESET);
+    sc_regGet (WRONG_COMMAND, &operand);
+    if (operand)
+        mt_setfgcolor(RED);
+    printf(" C");
+    mt_setfgcolor(RESET);
+
+
+
+
 
     mt_gotoXY(14, 2);
     ms_converte_write(ram[memx*10+memy], &sign, &command, &operand);

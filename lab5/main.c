@@ -35,7 +35,12 @@ int main()
     ram[44] = 32768;
     ram[55] = -289;
     ram[66] = 7045;
-    instructionCounter = 255;
+    instructionCounter = 0;
+    sc_regSet(OVERFLOW, 1);
+    sc_regSet(DIVISON_BY_ZERO, 1);
+    sc_regSet(GOING_BEYOND_MEMORY, 1);
+    //sc_regSet(IGNORING_CLOCK_PULSES, 1);
+    sc_regSet(WRONG_COMMAND, 1);
     bool quit = false;
 
     ms_interface_static();
