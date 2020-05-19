@@ -7,7 +7,15 @@
 
 int main()
 {
-    ram[1] = 1290;
+    ram[1] = 1290; //read [10]
+    ram[2] = 1410; //write [2]
+    ram[3] = 2562; //load [2]
+    ram[4] = 2702; //store [14]
+    ram[5] = 3854; //add [14]
+    ram[6] = 3982; //sub[14]
+    ram[7] = 4238; //mul [14]
+    ram[8] = 4196; //sub [100]
+
     instructionCounter = 0;
 
     sc_regInit();

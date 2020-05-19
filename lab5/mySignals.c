@@ -64,6 +64,7 @@ int ms_run()
     while (instructionCounter <= 100)
     {
         ms_interface();
+        CU();
         pause();
         memy++;
         if (memy % 10 == 0)
@@ -230,7 +231,7 @@ int ms_interface()
     big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
     bc_printbigchar(big, 14, 38, WHITE, RESET);
 
-	mt_gotoXY(23, 1);
+	mt_gotoXY(25, 1);
 	return 0;
 }
 
