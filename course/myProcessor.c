@@ -42,6 +42,8 @@ int CU()
     int value = ram[instructionCounter];
     if (sc_commandDecode(value, &command, &operand) != 0)
     { ///получена не команда
+        sc_regSet(WRONG_COMMAND, 1);
+        sc_regSet(IGNORING_CLOCK_PULSES, 1);
         return -1;
     }
     if (command != 43 && (operand < 0 || operand > 99))
@@ -109,7 +111,7 @@ int CU()
         case 43: ///HALT
             return 1;
         case 65: ///ADDC
-            if (operand > 100 || accumulator > 100 || accumulator < 0)
+            if (accumulator > 100 || accumulator < 0)
             {
                 sc_regSet(GOING_BEYOND_MEMORY, 1);
             }

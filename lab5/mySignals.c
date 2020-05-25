@@ -5,7 +5,7 @@
 #include "mySignals.h"
 #include "../course/myProcessor.h"
 
-int ms_signalhandler(int msignal)
+void ms_signalhandler(int msignal)
 {
     int value;
     sc_regGet (IGNORING_CLOCK_PULSES, &value);
@@ -13,7 +13,22 @@ int ms_signalhandler(int msignal)
     {
         if (msignal == SIGALRM) //SIGALRM - сигнал таймера
         {
-            instructionCounter++;
+            int valCU = CU();
+            if (valCU == 1)
+            {
+                mt_gotoXY(24, 1);
+                mt_setbgcolor(RED);
+                printf("Program completed");
+                mt_setbgcolor(RESET);
+                return;
+            }
+            if (valCU == 0)
+            {
+                memy++;
+                if (memy % 10 == 0 && memy != 0)
+                    memy = 0, memx++;
+                instructionCounter++;
+            }
         }
         else if (msignal == SIGUSR1) //SIGUSR1 - пользовательский сигнал
         {
@@ -24,7 +39,7 @@ int ms_signalhandler(int msignal)
             accumulator = 0;
         }
     }
-    return 0;
+    return;
 }
 
 int ms_kbhit() {
@@ -68,7 +83,7 @@ int ms_step()
 
 int ms_run()
 {
-    struct itimerval nval, oval;
+    struct itimerval nval;
     signal (SIGALRM, ms_signalhandler);
 
     nval.it_interval.tv_sec = 1;
@@ -81,23 +96,11 @@ int ms_run()
 
     instructionCounter = 0;
     memx = 0; memy = -1;
-    sc_regSet(IGNORING_CLOCK_PULSES, 1);
+    //sc_regSet(IGNORING_CLOCK_PULSES, 1);
     while (instructionCounter <= 100)
     {
         ms_interface();
         pause();
-        //int valCU = CU();
-
-        if (ms_step() == 1)
-        {
-            sc_regSet(IGNORING_CLOCK_PULSES, 1);
-            return 1;
-        }
-
-
-        ms_interface();
-        pause();
-
 
         if ( ms_kbhit() )
         {
