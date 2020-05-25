@@ -45,30 +45,60 @@ int ms_kbhit() {
     return left;
 }
 
+int ms_step()
+{
+    int valCU = CU();
+    if (valCU == 1)
+    {
+        mt_gotoXY(24, 1);
+        mt_setbgcolor(RED);
+        printf("Program completed");
+        mt_setbgcolor(RESET);
+        return 1;
+    }
+    if (valCU == 0)
+    {
+        memy++;
+        if (memy % 10 == 0 && memy != 0)
+            memy = 0, memx++;
+        instructionCounter++;
+    }
+    return 0;
+}
+
 int ms_run()
 {
     struct itimerval nval, oval;
     signal (SIGALRM, ms_signalhandler);
 
     nval.it_interval.tv_sec = 1;
-    nval.it_interval.tv_usec = 000;
+    nval.it_interval.tv_usec = 0;
     nval.it_value.tv_sec = 1;
     nval.it_value.tv_usec = 0;
 
     /* Запускаем таймер */
-    setitimer (ITIMER_REAL, &nval, &oval);
+    setitimer (ITIMER_REAL, &nval, NULL);
 
     instructionCounter = 0;
-    memx = memy = 0;
-    //sc_regSet(IGNORING_CLOCK_PULSES, 1);
+    memx = 0; memy = -1;
+    sc_regSet(IGNORING_CLOCK_PULSES, 1);
     while (instructionCounter <= 100)
     {
         ms_interface();
-        CU();
         pause();
-        memy++;
-        if (memy % 10 == 0)
-        memy = 0, memx++;
+        //int valCU = CU();
+
+        if (ms_step() == 1)
+        {
+            sc_regSet(IGNORING_CLOCK_PULSES, 1);
+            return 1;
+        }
+
+
+        ms_interface();
+        pause();
+
+
         if ( ms_kbhit() )
         {
             enum keys key;
@@ -81,13 +111,6 @@ int ms_run()
     }
     return 0;
 }
-
-//int ms_step()
-//{
-//    int command, operand;
-//    int value = ram[instructionCounter];
-//
-//}
 
 int ms_converte_write(int value, char *sign, int *command, int *operand)
 {
@@ -231,6 +254,8 @@ int ms_interface()
     big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
     bc_printbigchar(big, 14, 38, WHITE, RESET);
 
+    mt_gotoXY(23, 1);
+    printf("Input\\Output:");
 	mt_gotoXY(25, 1);
 	return 0;
 }
@@ -271,7 +296,7 @@ int ms_keyhandler(enum keys key)
             ms_run();
             break;
         case KEY_T:
-            CU();
+            ms_step();
             break;
         default:
             break;

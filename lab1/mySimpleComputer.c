@@ -131,6 +131,7 @@ int sc_commandEncode(int command, int operand, int *value) {
       *value = 0;
       *value = *value | (command << 7);
       *value = *value | operand;
+      printf("%d \n", *value);
     } else {
       //printf("Ошибка: указан неверный операнд \n");
       return 2;
@@ -164,7 +165,7 @@ int sc_commandDecode(int value, int *command, int *operand) {
       return 2;
     }
   } else {
-    sc_regSet(WRONG_COMMAND, 1);
+    //sc_regSet(WRONG_COMMAND, 1);
     //printf("Ошибка: value не является командой \n");
     return 1;
   }

@@ -41,10 +41,13 @@ int CU()
     int command, operand;
     int value = ram[instructionCounter];
     if (sc_commandDecode(value, &command, &operand) != 0)
-    {
-        //mt_gotoXY(24, 1);
-        //printf("%d %d %d", value, command, operand);
-        return 1;
+    { ///получена не команда
+        return -1;
+    }
+    if (command != 43 && (operand < 0 || operand > 99))
+    { ///выход за границы памяти
+        sc_regSet(GOING_BEYOND_MEMORY, 1);
+        return -2;
     }
     mt_gotoXY(24, 1);
     printf("                                 ");
@@ -78,9 +81,37 @@ int CU()
         case 33:
             ALU(command, operand);
             break;
+        case 40: ///JUMP
+            instructionCounter = operand; //-1 из-за таймера
+            memx = operand / 10;
+            memy = operand % 10;
+            return 2;
+            break;
+        case 41: ///JNEG
+            if (accumulator < 0)
+            {
+                instructionCounter = operand;
+                memx = operand / 10;
+                memy = operand % 10;
+                mt_gotoXY(25, 20);
+                return 2;
+            }
+            break;
+        case 42: ///JZ
+            if (accumulator == 0)
+            {
+                instructionCounter = operand;
+                memx = operand / 10;
+                memy = operand % 10;
+                return 2;
+            }
+            break;
+        case 43: ///HALT
+            return 1;
         default:
             mt_gotoXY(24, 1);
             printf("Error in CU()");
+            break;
     }
 
     return 0;
