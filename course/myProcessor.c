@@ -108,6 +108,14 @@ int CU()
             break;
         case 43: ///HALT
             return 1;
+        case 65: ///ADDC
+            if (operand > 100 || accumulator > 100 || accumulator < 0)
+            {
+                sc_regSet(GOING_BEYOND_MEMORY, 1);
+            }
+            else
+                accumulator = ram[operand] + ram[accumulator];
+            break;
         default:
             mt_gotoXY(24, 1);
             printf("Error in CU()");
