@@ -45,6 +45,11 @@ int main()
             ms_keyhandler(key);
     }
 
+    SA_translator("file.sa", "filesa.o");
+    ms_interface();
+
+
+
     return 0;
 }
 
