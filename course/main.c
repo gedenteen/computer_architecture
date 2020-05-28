@@ -25,6 +25,7 @@ int main()
     ram[22] = 5140; //jump [20] //цикл
     ram[30] = 8419; //addc [99]
     ram[31] = 5504; //halt [0]
+    ram[32] = 38901;
 
 
     instructionCounter = 0;

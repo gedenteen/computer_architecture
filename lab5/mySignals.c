@@ -123,7 +123,11 @@ int ms_converte_write(int value, char *sign, int *command, int *operand)
     if (temp != 32768) // 2^15 = 32768, 15 бит - признак команды
         *sign = '+', printf("+");
     else
+    {
         *sign = '-', printf("-");
+        printf("%04X", value);
+        return 0;
+    }
     temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
     temp = temp << 7;
     *command = (value & temp) >> 7;
@@ -182,6 +186,9 @@ int ms_interface()
 	int i, x1 = -1, y1 = 0, command, operand;
 	char sign;
 
+    mt_gotoXY(24, 1);
+    printf("                                                        ");
+
 	for (i = 0; i < 100; i++) {
 		if (i % 10 == 0)
 			x1++, y1 = 0;
@@ -195,13 +202,21 @@ int ms_interface()
 
 	mt_setfgcolor(WHITE); //содержимое
 	mt_gotoXY(2, 71);
-	if (accumulator >= 0)
-		printf("+");
-	printf("%4.4d", accumulator);
+	//ms_converte_write(accumulator, &sign, &command, &operand);
+	printf("%04X     ", accumulator);
 	mt_gotoXY(5, 71);
-	ms_converte_write(instructionCounter, &sign, &command, &operand);
+	//ms_converte_write(instructionCounter, &sign, &command, &operand);
+	printf("%04X     ", instructionCounter);
 	mt_gotoXY(8, 70);
-	printf("+00 : 00");
+	if (sc_commandDecode(ram[instructionCounter], &command, &operand) == 0)
+	{
+        printf("+%02X : %02X", command, operand);
+	}
+    else
+    {
+        printf("-%04X     ", ram[instructionCounter]);
+    }
+
 
 	mt_gotoXY(11, 68); //флаги
 	sc_regGet (OVERFLOW, &operand);
@@ -265,13 +280,21 @@ int ms_interface()
 
 int ms_keyhandler(enum keys key)
 {
+    char file_name[50];
+    int value;
     switch (key)
     {
         case KEY_L:
-            sc_memoryLoad("file.dat");
+            mt_gotoXY(24, 1);
+            printf("Введите имя файла для загрузки: ");
+            scanf("%s", file_name);
+            sc_memoryLoad(file_name);
             break;
         case KEY_S:
-            sc_memorySave("file.dat");
+            mt_gotoXY(24, 1);
+            printf("Введите имя файла для сохранения: ");
+            scanf("%s", file_name);
+            sc_memorySave(file_name);
             break;
         case KEY_LEFT:
             if (memy > 0) //это по горизонтали
@@ -300,6 +323,24 @@ int ms_keyhandler(enum keys key)
             break;
         case KEY_T:
             ms_step();
+            break;
+        case KEY_F5:
+            mt_gotoXY(24, 1);
+            printf("Введите значение аккумулятора (в 10-й СИ): ");
+            scanf("%d", &value);
+            accumulator = value;
+            break;
+        case KEY_F6:
+            mt_gotoXY(24, 1);
+            printf("Введите значение instructionCounter (в 10-й СИ): ");
+            scanf("%d", &value);
+            if (value < 0 || value >= 100)
+            {
+                sc_regSet(GOING_BEYOND_MEMORY, 1);
+                break;
+            }
+            instructionCounter = value;
+            memx = value / 10; memy = value % 10;
             break;
         default:
             break;

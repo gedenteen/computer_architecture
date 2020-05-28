@@ -51,8 +51,6 @@ int CU()
         sc_regSet(GOING_BEYOND_MEMORY, 1);
         return -2;
     }
-    mt_gotoXY(24, 1);
-    printf("                                 ");
     switch (command)
     {
         case 10: ///READ
