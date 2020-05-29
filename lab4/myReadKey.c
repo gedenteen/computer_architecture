@@ -43,6 +43,10 @@ int rk_readkey (enum keys *key)
         *key = KEY_ENTER;
     else if (!strcmp(buf, "q"))
         *key = KEY_Q;
+    else if (!strcmp(buf, "a"))
+        *key = KEY_A;
+    else if (!strcmp(buf, "b"))
+        *key = KEY_B;
 
     rk_mytermrestore(); //Восстановление канонического режима ввода
     return 0;

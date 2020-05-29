@@ -3,8 +3,9 @@
 #include "../lab3/myBigChars.h"
 #include "../lab4/myReadKey.h"
 #include "mySignals.h"
+#include "../course/myProcessor.h"
 
-int ms_signalhandler(int msignal)
+void ms_signalhandler(int msignal)
 {
     int value;
     sc_regGet (IGNORING_CLOCK_PULSES, &value);
@@ -12,7 +13,19 @@ int ms_signalhandler(int msignal)
     {
         if (msignal == SIGALRM) //SIGALRM - сигнал таймера
         {
-            instructionCounter++;
+            int valCU = CU();
+            if (valCU == 1)
+            {
+                ms_console_message("Program completed");
+                return;
+            }
+            if (valCU == 0)
+            {
+                memy++;
+                if (memy % 10 == 0 && memy != 0)
+                    memy = 0, memx++;
+                instructionCounter++;
+            }
         }
         else if (msignal == SIGUSR1) //SIGUSR1 - пользовательский сигнал
         {
@@ -23,33 +36,67 @@ int ms_signalhandler(int msignal)
             accumulator = 0;
         }
     }
+    return;
+}
+
+int ms_kbhit() {
+    static bool inited = false;
+    int left;
+
+    if (!inited) {
+        struct termios t;
+        tcgetattr(0, &t);
+        t.c_lflag &= ~ICANON;
+        tcsetattr(0, TCSANOW, &t);
+        setbuf(stdin, NULL);
+        inited = true;
+    }
+
+    ioctl(0, FIONREAD, &left);
+
+    return left;
+}
+
+int ms_step()
+{
+    int valCU = CU();
+    if (valCU == 1)
+    {
+        ms_console_message("Program completed");
+        return 1;
+    }
+    if (valCU == 0)
+    {
+        memy++;
+        if (memy % 10 == 0 && memy != 0)
+            memy = 0, memx++;
+        instructionCounter++;
+    }
     return 0;
 }
 
 int ms_run()
 {
-    struct itimerval nval, oval;
+    struct itimerval nval;
     signal (SIGALRM, ms_signalhandler);
 
     nval.it_interval.tv_sec = 1;
-    nval.it_interval.tv_usec = 000;
+    nval.it_interval.tv_usec = 0;
     nval.it_value.tv_sec = 1;
     nval.it_value.tv_usec = 0;
 
     /* Запускаем таймер */
-    setitimer (ITIMER_REAL, &nval, &oval);
+    setitimer (ITIMER_REAL, &nval, NULL);
 
     instructionCounter = 0;
-    memx = memy = 0;
+    memx = 0; memy = -1;
     //sc_regSet(IGNORING_CLOCK_PULSES, 1);
     while (instructionCounter <= 100)
     {
         ms_interface();
         pause();
-        memy++;
-        if (memy % 10 == 0)
-        memy = 0, memx++;
-        if ( _kbhit() )
+
+        if ( ms_kbhit() )
         {
             enum keys key;
             rk_readkey(&key);
@@ -65,12 +112,16 @@ int ms_run()
 int ms_converte_write(int value, char *sign, int *command, int *operand)
 {
     int temp = 1;
-    temp = temp << 15; //одна единица на 15 бите
+    temp = temp << 14; //одна единица на 15 бите
     temp = temp & value; //конъюнкция
-    if (temp != 32768) // 2^15 = 32768, 15 бит - признак команды
+    if (temp != 16384) // 2^14 = 16384, 15 бит - признак команды
         *sign = '+', printf("+");
     else
+    {
         *sign = '-', printf("-");
+        printf("%04X", value);
+        return 1;
+    }
     temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
     temp = temp << 7;
     *command = (value & temp) >> 7;
@@ -107,13 +158,13 @@ void ms_interface_static()
 
 	mt_setfgcolor(WHITE); //содержимое keys
 	mt_gotoXY(14, 48);
-	printf("l - load");
+	printf("l - load; s - save");
 	mt_gotoXY(15, 48);
-	printf("s - save");
+	printf("r - run; t - step");
 	mt_gotoXY(16, 48);
-	printf("r - run");
+	printf("a - Simple Assembler translator");
 	mt_gotoXY(17, 48);
-	printf("t - step");
+	printf(" ");
 	mt_gotoXY(18, 48);
 	printf("i - reset");
 	mt_gotoXY(19, 48);
@@ -142,13 +193,20 @@ int ms_interface()
 
 	mt_setfgcolor(WHITE); //содержимое
 	mt_gotoXY(2, 71);
-	if (accumulator >= 0)
-		printf("+");
-	printf("%4.4d", accumulator);
+	//ms_converte_write(accumulator, &sign, &command, &operand);
+	printf("%04X     ", accumulator);
 	mt_gotoXY(5, 71);
-	ms_converte_write(instructionCounter, &sign, &command, &operand);
+	//ms_converte_write(instructionCounter, &sign, &command, &operand);
+	printf("%04X     ", instructionCounter);
 	mt_gotoXY(8, 70);
-	printf("+00 : 00");
+	if (sc_commandDecode(ram[instructionCounter], &command, &operand) == 0)
+	{
+        printf("+%d : %d      ", command, operand);
+	}
+    else
+    {
+        printf("no operation  ");
+    }
 
 	mt_gotoXY(11, 68); //флаги
 	sc_regGet (OVERFLOW, &operand);
@@ -177,10 +235,6 @@ int ms_interface()
     printf(" C");
     mt_setfgcolor(RESET);
 
-
-
-
-
     mt_gotoXY(14, 2);
     ms_converte_write(ram[memx*10+memy], &sign, &command, &operand);
     int file2 = open("../lab3/bigchars.txt", O_RDONLY); //бигчары
@@ -204,35 +258,51 @@ int ms_interface()
     big[0] = arrbig[temp*2], big[1] = arrbig[temp*2+1];
     bc_printbigchar(big, 14, 38, WHITE, RESET);
 
-	mt_gotoXY(23, 1);
+    mt_gotoXY(23, 1);
+    printf("Input\\Output:");
+	mt_gotoXY(25, 1);
 	return 0;
+}
+
+void ms_console_message(char st[])
+{
+    mt_gotoXY(24, 1);
+    printf("                                                            ");
+    mt_gotoXY(24, 1);
+    printf("%s", st);
 }
 
 int ms_keyhandler(enum keys key)
 {
+    char file_name[50], file_name1[50];
+    int value;
     switch (key)
     {
         case KEY_L:
-            sc_memoryLoad("file.dat");
+            ms_console_message("Enter the file name to load: ");
+            scanf("%s", file_name);
+            sc_memoryLoad(file_name);
             break;
         case KEY_S:
-            sc_memorySave("file.dat");
+            ms_console_message("Enter the file name to save: ");
+            scanf("%s", file_name);
+            sc_memorySave(file_name);
             break;
         case KEY_LEFT:
             if (memy > 0) //это по горизонтали
-                memy--;
+                memy--, instructionCounter--;
             break;
         case KEY_RIGHT:
             if (memy < 9)
-                memy++;
+                memy++, instructionCounter++;
             break;
         case KEY_UP:
             if (memx > 0)
-                memx--;
+                memx--, instructionCounter -= 10;
             break;
         case KEY_DOWN:
             if (memx < 9)
-                memx++;
+                memx++, instructionCounter += 10;
             break;
         case KEY_I:
             ms_signalhandler(SIGUSR1);
@@ -243,6 +313,31 @@ int ms_keyhandler(enum keys key)
         case KEY_R:
             ms_run();
             break;
+        case KEY_T:
+            ms_step();
+            break;
+        case KEY_F5:
+            ms_console_message("Envet value accumulator (in 10-й NS): ");
+            scanf("%d", &value);
+            accumulator = value;
+            break;
+        case KEY_F6:
+            ms_console_message("Enter value instructionCounter (in 10-й NS): ");
+            scanf("%d", &value);
+            if (value < 0 || value >= 100)
+            {
+                sc_regSet(GOING_BEYOND_MEMORY, 1);
+                break;
+            }
+            instructionCounter = value;
+            memx = value / 10; memy = value % 10;
+            break;
+        case KEY_A:
+            ms_console_message("Input name file *.sa ");
+            scanf("%s", file_name);
+            ms_console_message("Input name file *.o ");
+            scanf("%s", file_name1);
+            SA_translator(file_name, file_name1);
         default:
             break;
     }
