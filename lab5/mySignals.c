@@ -112,15 +112,15 @@ int ms_run()
 int ms_converte_write(int value, char *sign, int *command, int *operand)
 {
     int temp = 1;
-    temp = temp << 15; //одна единица на 15 бите
+    temp = temp << 14; //одна единица на 15 бите
     temp = temp & value; //конъюнкция
-    if (temp != 32768) // 2^15 = 32768, 15 бит - признак команды
+    if (temp != 16384) // 2^14 = 16384, 15 бит - признак команды
         *sign = '+', printf("+");
     else
     {
         *sign = '-', printf("-");
         printf("%04X", value);
-        return 0;
+        return 1;
     }
     temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
     temp = temp << 7;
@@ -201,11 +201,11 @@ int ms_interface()
 	mt_gotoXY(8, 70);
 	if (sc_commandDecode(ram[instructionCounter], &command, &operand) == 0)
 	{
-        printf("+%02X : %02X", command, operand);
+        printf("+%d : %d      ", command, operand);
 	}
     else
     {
-        printf("-%04X     ", ram[instructionCounter]);
+        printf("no operation  ");
     }
 
 	mt_gotoXY(11, 68); //флаги

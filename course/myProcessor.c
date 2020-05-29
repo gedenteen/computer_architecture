@@ -7,13 +7,26 @@
 
 int ALU (int command, int operand)
 {
+    int value;
     switch (command)
     {
         case 30: ///ADD
-            accumulator += ram[operand];
+            value = accumulator + ram[operand];
+            if (value >= 32768 || value < 0) // 2^15 = 32768
+            {
+                sc_regSet(OVERFLOW, 1);
+                return -1;
+            }
+            accumulator = value;
             break;
         case 31: ///SUB
-            accumulator -= ram[operand];
+            value = accumulator - ram[operand];
+            if (value >= 32768 || value < 0) // 2^15 = 32768
+            {
+                sc_regSet(OVERFLOW, 1);
+                return -1;
+            }
+            accumulator = value;
             break;
         case 32: ///DIVIDE
             if (ram[operand] == 0)
@@ -25,7 +38,13 @@ int ALU (int command, int operand)
             accumulator /= ram[operand];
             break;
         case 33: ///MUL
-            accumulator *= ram[operand];
+            value = accumulator * ram[operand];
+            if (value >= 32768) // 2^15 = 32768
+            {
+                sc_regSet(OVERFLOW, 1);
+                return -1;
+            }
+            accumulator = value;
             break;
         default:
             ms_console_message("Error in ALU()");
@@ -56,6 +75,11 @@ int CU()
             mt_gotoXY(24, 1);
             printf("Enter value in ram[%d] = ", operand);
             scanf("%d", &value);
+            if (value >= 32768 || value < 0)
+            {
+                sc_regSet(OVERFLOW, 1);
+                return -3;
+            }
             ram[operand] = value;
             break;
         case 11: ///WRITE
@@ -76,7 +100,12 @@ int CU()
             ALU(command, operand);
             break;
         case 40: ///JUMP
-            instructionCounter = operand; //-1 из-за таймера
+            if (operand >= 100)
+            {
+                sc_regSet(GOING_BEYOND_MEMORY, 1);
+                return -3;
+            }
+            instructionCounter = operand;
             memx = operand / 10;
             memy = operand % 10;
             return 2;
@@ -84,6 +113,11 @@ int CU()
         case 41: ///JNEG
             if (accumulator < 0)
             {
+                if (operand >= 100)
+                {
+                    sc_regSet(GOING_BEYOND_MEMORY, 1);
+                    return -3;
+                }
                 instructionCounter = operand;
                 memx = operand / 10;
                 memy = operand % 10;
@@ -94,6 +128,11 @@ int CU()
         case 42: ///JZ
             if (accumulator == 0)
             {
+                if (operand >= 100)
+                {
+                    sc_regSet(GOING_BEYOND_MEMORY, 1);
+                    return -3;
+                }
                 instructionCounter = operand;
                 memx = operand / 10;
                 memy = operand % 10;
@@ -106,9 +145,14 @@ int CU()
             if (accumulator > 100 || accumulator < 0)
             {
                 sc_regSet(GOING_BEYOND_MEMORY, 1);
+                return -3;
             }
-            else
-                accumulator = ram[operand] + ram[accumulator];
+            if (operand >= 100)
+            {
+                sc_regSet(GOING_BEYOND_MEMORY, 1);
+                return -3;
+            }
+            accumulator = ram[operand] + ram[accumulator];
             break;
         default:
             ms_console_message("Error in CU()");
@@ -158,7 +202,6 @@ int charToInt(char ch)
             return -1;
             break;
     }
-    //return -1;
 }
 
 int SA_translator(char *file_in, char *file_out)
@@ -184,6 +227,12 @@ int SA_translator(char *file_in, char *file_out)
         if (fread(&ch1, sizeof(char), 1, fp) == 0)
             goto error_;
         cell += charToInt(ch1);
+        if (cell >= 100)
+        {
+            sc_regSet(GOING_BEYOND_MEMORY, 1);
+            return 1;
+        }
+
         if (fread(&ch1, sizeof(char), 1, fp) == 0) /// должен быть пробел
             goto error_;
 
@@ -230,7 +279,7 @@ int SA_translator(char *file_in, char *file_out)
             if (fread(&ch1, sizeof(char), 1, fp) == 0)
                 goto error_;
             if (ch1 == '-')
-                ramt[cell] = 32768; ///признак команды
+                ramt[cell] = 16384; ///признак команды
             else if (ch1 != '+')
                 goto error_;
 
@@ -261,6 +310,11 @@ int SA_translator(char *file_in, char *file_out)
         if (fread(&ch1, sizeof(char), 1, fp) == 0)
             goto error_;
         operand += charToInt(ch1);
+        if (operand >= 128)
+        {
+            sc_regSet(OVERFLOW, 1);
+            return -1;
+        }
 
         command = command << 7;
         ramt[cell] = command + operand;
