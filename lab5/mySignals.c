@@ -9,32 +9,29 @@ void ms_signalhandler(int msignal)
 {
     int value;
     sc_regGet (IGNORING_CLOCK_PULSES, &value);
-    if (!value)
+    if (!value && msignal == SIGALRM)
     {
-        if (msignal == SIGALRM) //SIGALRM - сигнал таймера
+        int valCU = CU();
+        if (valCU == 1)
         {
-            int valCU = CU();
-            if (valCU == 1)
-            {
-                ms_console_message("Program completed");
-                return;
-            }
-            if (valCU == 0)
-            {
-                memy++;
-                if (memy % 10 == 0 && memy != 0)
-                    memy = 0, memx++;
-                instructionCounter++;
-            }
+            ms_console_message("Program completed");
+            return;
         }
-        else if (msignal == SIGUSR1) //SIGUSR1 - пользовательский сигнал
+        if (valCU == 0)
         {
-            sc_memoryInit();
-            sc_regInit();
-            memx = memy = 0;
-            instructionCounter = 0;
-            accumulator = 0;
+            memy++;
+            if (memy % 10 == 0 && memy != 0)
+                memy = 0, memx++;
+            instructionCounter++;
         }
+    }
+    else if (msignal == SIGUSR1) //SIGUSR1 - пользовательский сигнал
+    {
+        sc_memoryInit();
+        sc_regInit();
+        memx = memy = 0;
+        instructionCounter = 0;
+        accumulator = 0;
     }
     return;
 }
@@ -77,6 +74,8 @@ int ms_step()
 
 int ms_run()
 {
+    sc_regInit();
+
     struct itimerval nval;
     signal (SIGALRM, ms_signalhandler);
 
@@ -119,7 +118,10 @@ int ms_converte_write(int value, char *sign, int *command, int *operand)
     else
     {
         *sign = '-', printf("-");
+        value -= 16384;
         printf("%04X", value);
+        *command = value / (16 * 16);
+        *operand = value % (16 * 16);
         return 1;
     }
     temp = 128 - 1; //^0, ^1, ^2, ^3, ^4, ^5, ^6 -- 7 битов
@@ -235,7 +237,7 @@ int ms_interface()
     printf(" C");
     mt_setfgcolor(RESET);
 
-    mt_gotoXY(14, 2);
+    mt_gotoXY(15, 2);
     ms_converte_write(ram[memx*10+memy], &sign, &command, &operand);
     int file2 = open("../lab3/bigchars.txt", O_RDONLY); //бигчары
     int cnt = 0, arrbig[36] = {0}, big[2] = {0};
@@ -272,10 +274,12 @@ void ms_console_message(char st[])
     printf("%s", st);
 }
 
+bool no_enter;
 int ms_keyhandler(enum keys key)
 {
-    char file_name[50], file_name1[50];
-    int value;
+    char file_name[50], file_name1[50], ch5[5];
+    int value, value1;
+    no_enter = false;
     switch (key)
     {
         case KEY_L:
@@ -317,12 +321,12 @@ int ms_keyhandler(enum keys key)
             ms_step();
             break;
         case KEY_F5:
-            ms_console_message("Envet value accumulator (in 10-й NS): ");
+            ms_console_message("Enter value accumulator (in 10 NS): ");
             scanf("%d", &value);
             accumulator = value;
             break;
         case KEY_F6:
-            ms_console_message("Enter value instructionCounter (in 10-й NS): ");
+            ms_console_message("Enter value instructionCounter (in 10 NS): ");
             scanf("%d", &value);
             if (value < 0 || value >= 100)
             {
@@ -333,11 +337,56 @@ int ms_keyhandler(enum keys key)
             memx = value / 10; memy = value % 10;
             break;
         case KEY_A:
-            ms_console_message("Input name file *.sa ");
+            no_enter = true;
+            ms_console_message("Enter names files *.sa ");
             scanf("%s", file_name);
-            ms_console_message("Input name file *.o ");
+            ms_console_message("Enter name file *.o ");
             scanf("%s", file_name1);
             SA_translator(file_name, file_name1);
+            no_enter = false;
+            break;
+        case KEY_ENTER:
+            ms_console_message("Enter value this cell (in 16 NS): ");
+            scanf("%s", ch5);
+
+            if (ch5[0] == '-')
+            {
+                ram[instructionCounter] = 16384;
+                ram[instructionCounter] += charToInt(ch5[1]) * 16 * 16 * 16;
+                ram[instructionCounter] += charToInt(ch5[2]) * 16 * 16;
+                ram[instructionCounter] += charToInt(ch5[3]) * 16;
+                ram[instructionCounter] += charToInt(ch5[4]);
+            }
+            else
+            {
+                for (int i = 1; i < 5; i++)
+                    if (charToInt(ch5[i]) == -1)
+                    {
+                        ms_console_message("Wrong value");
+                        return -1;
+                    }
+                value = charToInt(ch5[1]) * 16;
+                value += charToInt(ch5[2]);
+                if (value >= 128)
+                {
+                    ms_console_message("Wrong value");
+                    return -1;
+                }
+                value1 = charToInt(ch5[3]) * 16;
+                value1 += charToInt(ch5[4]);
+                if (value1 >= 128)
+                {
+                    ms_console_message("Wrong value");
+                    return -1;
+                }
+                ram[instructionCounter] = (value << 7) + value1;
+            }
+
+
+
+
+
+            break;
         default:
             break;
     }

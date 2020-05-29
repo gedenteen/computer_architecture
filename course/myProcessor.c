@@ -12,20 +12,10 @@ int ALU (int command, int operand)
     {
         case 30: ///ADD
             value = accumulator + ram[operand];
-            if (value >= 32768 || value < 0) // 2^15 = 32768
-            {
-                sc_regSet(OVERFLOW, 1);
-                return -1;
-            }
             accumulator = value;
             break;
         case 31: ///SUB
             value = accumulator - ram[operand];
-            if (value >= 32768 || value < 0) // 2^15 = 32768
-            {
-                sc_regSet(OVERFLOW, 1);
-                return -1;
-            }
             accumulator = value;
             break;
         case 32: ///DIVIDE
@@ -39,11 +29,6 @@ int ALU (int command, int operand)
             break;
         case 33: ///MUL
             value = accumulator * ram[operand];
-            if (value >= 32768) // 2^15 = 32768
-            {
-                sc_regSet(OVERFLOW, 1);
-                return -1;
-            }
             accumulator = value;
             break;
         default:
@@ -279,7 +264,22 @@ int SA_translator(char *file_in, char *file_out)
             if (fread(&ch1, sizeof(char), 1, fp) == 0)
                 goto error_;
             if (ch1 == '-')
-                ramt[cell] = 16384; ///признак команды
+            {
+                ramt[cell] = 16384;
+                if (fread(&ch1, sizeof(char), 1, fp) == 0)
+                    goto error_;
+                ramt[cell] += charToInt(ch1) * 16 * 16 * 16;
+                if (fread(&ch1, sizeof(char), 1, fp) == 0)
+                    goto error_;
+                ramt[cell] += charToInt(ch1) * 16 * 16;
+                if (fread(&ch1, sizeof(char), 1, fp) == 0)
+                    goto error_;
+                ramt[cell] += charToInt(ch1) * 16;
+                if (fread(&ch1, sizeof(char), 1, fp) == 0)
+                    goto error_;
+                ramt[cell] += charToInt(ch1);
+                goto checkeof_;
+            }
             else if (ch1 != '+')
                 goto error_;
 
@@ -340,7 +340,8 @@ int SA_translator(char *file_in, char *file_out)
     }
 
     FILE *fq;
-    if (!(fq = fopen(file_out, "wb"))) {
+    if (!(fq = fopen(file_out, "wb")))
+    {
         fclose(fp); fclose(fq);
         ms_console_message(" ");
         mt_gotoXY(24, 1);
@@ -367,5 +368,131 @@ int SA_translator(char *file_in, char *file_out)
     mt_gotoXY(24, 1);
     printf("Error reading line %d in file %s", numst, file_in);
     return -1;
+}
+
+int SB_translator(char *file_in, char *file_out)
+{
+    FILE *f_in, *f_out;
+    if (!(f_in = fopen(file_in, "rb")))
+    {
+        fclose(f_in);
+        ms_console_message(" ");
+        mt_gotoXY(24, 1);
+        printf("Error: can't open file %s \n", file_in);
+        return -1;
+    }
+    if (!(f_out = fopen(file_out, "wb")))
+    {
+        fclose(f_out);
+        ms_console_message(" ");
+        mt_gotoXY(24, 1);
+        printf("Error: can't open file %s \n", file_out);
+        return -1;
+    }
+
+    int line_num[100] = {0}, line = 0, SB_vars_max = 0;
+    int SA_cell_command = 0, SA_cell_letter = 99;
+    char ch1, ch10[10];
+    struct SB_variable SB_vars[40];
+    bool flag = true, read_error = false;
+    while (flag)
+    {
+        //fscanf(f_in, "%s", ); ///если кол-во считанных символов == 0
+        if (fread(&ch1, sizeof(char), 1, f_in) == 0) ///если кол-во считанных символов == 0
+            break;
+        line_num[line] = charToInt(ch1) * 10;
+        if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+            goto error_;
+        line_num[line] += charToInt(ch1);
+
+        if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+            goto error_;
+        if (ch1 != ' ')
+            goto error_;
+
+        int u = 0;
+        while (1)
+        {
+            if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+                goto error_;
+            if (ch1 == '\n')
+            {
+                ms_console_message("error1");
+                goto error_;
+            }
+
+            if (ch1 == ' ')
+                break;
+            ch10[u] = ch1; ///иначе
+            u++;
+        }
+
+        if (strncmp(ch10, "REM", 3) == 0)
+        {
+            while (1)
+            {
+                fread(&ch1, sizeof(char), 1, f_in);
+                if (ch1 == '\n')
+                    break;
+            }
+        }
+        else if (strncmp(ch10, "INPUT", 5) == 0)
+        {
+            if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+                goto error_;
+//            for (u = 0; u < SB_vars_max; U++)
+//            {
+//                if SB_vars[u].letter
+//            }
+            SB_vars[SB_vars_max].letter = ch1; ///новая переменная, ее буква
+            SB_vars[SB_vars_max].cell = SA_cell_letter; ///ее ячейка в ram
+            fprintf(f_out, "%02X READ %02X \n", SA_cell_command, SA_cell_letter); ///записать это в file_out
+            SB_vars_max++; ///кол-во переменных +1
+            SA_cell_command++; ///номер следующей команды в file_out +1
+            SA_cell_letter--; ///номер для следующей переменной сдвигается назад
+
+            if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+                goto error_;
+            if (ch1 != '\n')
+                goto error_;
+        }
+        else if (strncmp(ch10, "OUTPUT", 6) == 0)
+        {
+//            if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+//                goto error_;
+//            for (u = 0; u < SB_vars_max; U++)
+//            {
+//                if SB_vars[u].letter
+//            }
+//            SB_vars[SB_vars_max].letter = ch1; ///новая переменная, ее буква
+//            SB_vars[SB_vars_max].cell = SA_cell_letter; ///ее ячейка в ram
+//            fprintf(f_out, "%02X READ %02X \n", SA_cell_command, SA_cell_letter); ///записать это в file_out
+//            SB_vars_max++; ///кол-во переменных +1
+//            SA_cell_command++; ///номер следующей команды в file_out +1
+//            SA_cell_letter--; ///номер для следующей переменной сдвигается назад
+//
+//            if (fread(&ch1, sizeof(char), 1, f_in) == 0)
+//                goto error_;
+//            if (ch1 != '\n')
+//                goto error_;
+        }
+
+
+        line++;
+    }
+
+    ms_console_message("ok");
+    fclose(f_in); fclose(f_out);
+    return 0;
+
+
+    error_:
+    //ms_console_message(ch10);
+    ms_console_message(" ");
+    mt_gotoXY(24, 1);
+    printf("Error in line %d in file %s", line, file_in);
+    fclose(f_in); fclose(f_out);
+    return -1;
+
 }
 
