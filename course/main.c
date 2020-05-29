@@ -27,9 +27,7 @@ int main()
     ram[31] = 5504; //halt [0]
     ram[32] = 38901;
 
-
     instructionCounter = 0;
-
     sc_regInit();
     mt_clrscr();
 
@@ -45,11 +43,6 @@ int main()
         else
             ms_keyhandler(key);
     }
-
-    SA_translator("file.sa", "filesa.o");
-    ms_interface();
-
-
 
     return 0;
 }

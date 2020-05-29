@@ -18,8 +18,7 @@ int ALU (int command, int operand)
         case 32: ///DIVIDE
             if (ram[operand] == 0)
             {
-                mt_gotoXY(24, 1);
-                printf("division by zero");
+                ms_console_message("Division by zero");
                 sc_regSet(DIVISON_BY_ZERO, 1);
                 return -1;
             }
@@ -29,8 +28,7 @@ int ALU (int command, int operand)
             accumulator *= ram[operand];
             break;
         default:
-            mt_gotoXY(24, 1);
-            printf("Error in ALU()");
+            ms_console_message("Error in ALU()");
             return -1;
     }
     return 0;
@@ -54,20 +52,16 @@ int CU()
     switch (command)
     {
         case 10: ///READ
+            ms_console_message(" ");
             mt_gotoXY(24, 1);
-            mt_setbgcolor(RED);
             printf("Enter value in ram[%d] = ", operand);
             scanf("%d", &value);
-            mt_setbgcolor(RESET);
             ram[operand] = value;
-            //mt_gotoXY(24, 1);
-            //printf("                                    ");
             break;
         case 11: ///WRITE
+            ms_console_message(" ");
             mt_gotoXY(24, 1);
-            mt_setbgcolor(RED);
             printf("Value in ram[%d] == %d", operand, ram[operand]);
-            mt_setbgcolor(RESET);
             break;
         case 20: ///LOAD
             accumulator = ram[operand];
@@ -117,8 +111,7 @@ int CU()
                 accumulator = ram[operand] + ram[accumulator];
             break;
         default:
-            mt_gotoXY(24, 1);
-            printf("Error in CU()");
+            ms_console_message("Error in CU()");
             break;
     }
 
@@ -175,12 +168,12 @@ int SA_translator(char *file_in, char *file_out)
     FILE *fp;
     if (!(fp = fopen(file_in, "rb"))) {
         fclose(fp);
+        ms_console_message(" ");
         mt_gotoXY(24, 1);
-        printf("Ошибка: не удалость открыть файл %s \n", file_in);
+        printf("Error: can't open file %s \n", file_in);
         return -1;
     }
 
-    sc_memoryInit();
     bool flag = true;
     int numst = 0;
     while (flag)
@@ -191,8 +184,6 @@ int SA_translator(char *file_in, char *file_out)
         if (fread(&ch1, sizeof(char), 1, fp) == 0)
             goto error_;
         cell += charToInt(ch1);
-        //mt_gotoXY(24, 1); //удолить
-        //printf("%d", cell); //удолить
         if (fread(&ch1, sizeof(char), 1, fp) == 0) /// должен быть пробел
             goto error_;
 
@@ -208,8 +199,6 @@ int SA_translator(char *file_in, char *file_out)
             if (u == 10)
                 goto error_;
         }
-        //mt_gotoXY(24, 5); //удолить
-        //printf("%s", ch10); //удолить
         if (strncmp(ch10, "READ", 4) == 0)
             command = 10;
         else if (strncmp(ch10, "WRITE", 5) == 0)
@@ -266,17 +255,12 @@ int SA_translator(char *file_in, char *file_out)
         else ///если неизвестный номер команды
             goto error_;
 
-        //mt_gotoXY(24, 15); //удолить
-        //printf("%d", command); //удолить
-
         if (fread(&ch1, sizeof(char), 1, fp) == 0)
             goto error_;
         operand = charToInt(ch1) * 16;
         if (fread(&ch1, sizeof(char), 1, fp) == 0)
             goto error_;
         operand += charToInt(ch1);
-        //mt_gotoXY(24, 25); //удолить
-        //printf("oper=%d; %c", operand, ch1); //удолить
 
         command = command << 7;
         ramt[cell] = command + operand;
@@ -303,27 +287,31 @@ int SA_translator(char *file_in, char *file_out)
 
     FILE *fq;
     if (!(fq = fopen(file_out, "wb"))) {
-        fclose(fp);
+        fclose(fp); fclose(fq);
+        ms_console_message(" ");
         mt_gotoXY(24, 1);
-        printf("Ошибка: не удалость открыть файл %s \n", file_out);
+        printf("Error: can't open file %s \n", file_out);
         return -1;
     }
     if (fwrite(ramt, sizeof(int), 100, fq) != 100) //возвращает число записанных элементов
     {
-        fclose(fp);
+        fclose(fp); fclose(fq);
+        ms_console_message(" ");
         mt_gotoXY(24, 1);
-        printf("Ошибка: не удалось записать информацию в %s \n", file_out);
+        printf("Error: failed to write information to %s \n", file_out);
         return 1;
     }
-    fclose(fp);
+    fclose(fp); fclose(fq);
+    ms_console_message(" ");
     mt_gotoXY(24, 1);
-    printf("SA_translator вернул 0");
+    printf("SA_translator return 0");
     return 0;
 
     error_:
     fclose(fp);
+    ms_console_message(" ");
     mt_gotoXY(24, 1);
-    printf("Ошибка чтения строки %d в файле %s", numst, file_in);
+    printf("Error reading line %d in file %s", numst, file_in);
     return -1;
 }
 

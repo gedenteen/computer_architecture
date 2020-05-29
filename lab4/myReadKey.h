@@ -26,7 +26,9 @@ enum keys
     KEY_DOWN,
     KEY_LEFT,
     KEY_ENTER,
-    KEY_Q
+    KEY_Q,
+    KEY_A,
+    KEY_B
 };
 
 int rk_readkey (enum keys *key);

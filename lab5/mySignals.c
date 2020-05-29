@@ -16,10 +16,7 @@ void ms_signalhandler(int msignal)
             int valCU = CU();
             if (valCU == 1)
             {
-                mt_gotoXY(24, 1);
-                mt_setbgcolor(RED);
-                printf("Program completed");
-                mt_setbgcolor(RESET);
+                ms_console_message("Program completed");
                 return;
             }
             if (valCU == 0)
@@ -65,10 +62,7 @@ int ms_step()
     int valCU = CU();
     if (valCU == 1)
     {
-        mt_gotoXY(24, 1);
-        mt_setbgcolor(RED);
-        printf("Program completed");
-        mt_setbgcolor(RESET);
+        ms_console_message("Program completed");
         return 1;
     }
     if (valCU == 0)
@@ -164,13 +158,13 @@ void ms_interface_static()
 
 	mt_setfgcolor(WHITE); //содержимое keys
 	mt_gotoXY(14, 48);
-	printf("l - load");
+	printf("l - load; s - save");
 	mt_gotoXY(15, 48);
-	printf("s - save");
+	printf("r - run; t - step");
 	mt_gotoXY(16, 48);
-	printf("r - run");
+	printf("a - Simple Assembler translator");
 	mt_gotoXY(17, 48);
-	printf("t - step");
+	printf(" ");
 	mt_gotoXY(18, 48);
 	printf("i - reset");
 	mt_gotoXY(19, 48);
@@ -185,9 +179,6 @@ int ms_interface()
 {
 	int i, x1 = -1, y1 = 0, command, operand;
 	char sign;
-
-    mt_gotoXY(24, 1);
-    printf("                                                        ");
 
 	for (i = 0; i < 100; i++) {
 		if (i % 10 == 0)
@@ -217,7 +208,6 @@ int ms_interface()
         printf("-%04X     ", ram[instructionCounter]);
     }
 
-
 	mt_gotoXY(11, 68); //флаги
 	sc_regGet (OVERFLOW, &operand);
 	if (operand)
@@ -244,10 +234,6 @@ int ms_interface()
         mt_setfgcolor(RED);
     printf(" C");
     mt_setfgcolor(RESET);
-
-
-
-
 
     mt_gotoXY(14, 2);
     ms_converte_write(ram[memx*10+memy], &sign, &command, &operand);
@@ -278,21 +264,27 @@ int ms_interface()
 	return 0;
 }
 
+void ms_console_message(char st[])
+{
+    mt_gotoXY(24, 1);
+    printf("                                                            ");
+    mt_gotoXY(24, 1);
+    printf("%s", st);
+}
+
 int ms_keyhandler(enum keys key)
 {
-    char file_name[50];
+    char file_name[50], file_name1[50];
     int value;
     switch (key)
     {
         case KEY_L:
-            mt_gotoXY(24, 1);
-            printf("Введите имя файла для загрузки: ");
+            ms_console_message("Enter the file name to load: ");
             scanf("%s", file_name);
             sc_memoryLoad(file_name);
             break;
         case KEY_S:
-            mt_gotoXY(24, 1);
-            printf("Введите имя файла для сохранения: ");
+            ms_console_message("Enter the file name to save: ");
             scanf("%s", file_name);
             sc_memorySave(file_name);
             break;
@@ -325,14 +317,12 @@ int ms_keyhandler(enum keys key)
             ms_step();
             break;
         case KEY_F5:
-            mt_gotoXY(24, 1);
-            printf("Введите значение аккумулятора (в 10-й СИ): ");
+            ms_console_message("Envet value accumulator (in 10-й NS): ");
             scanf("%d", &value);
             accumulator = value;
             break;
         case KEY_F6:
-            mt_gotoXY(24, 1);
-            printf("Введите значение instructionCounter (в 10-й СИ): ");
+            ms_console_message("Enter value instructionCounter (in 10-й NS): ");
             scanf("%d", &value);
             if (value < 0 || value >= 100)
             {
@@ -342,6 +332,12 @@ int ms_keyhandler(enum keys key)
             instructionCounter = value;
             memx = value / 10; memy = value % 10;
             break;
+        case KEY_A:
+            ms_console_message("Input name file *.sa ");
+            scanf("%s", file_name);
+            ms_console_message("Input name file *.o ");
+            scanf("%s", file_name1);
+            SA_translator(file_name, file_name1);
         default:
             break;
     }
