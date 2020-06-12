@@ -803,10 +803,10 @@ int SB_translator(char *file_in, char *file_out)
         real_line_num++;
         if (fread(&ch1, sizeof(char), 1, f_in) == 0) ///если кол-во считанных символов == 0
             break;
-        line_num[cmd_count] = charToInt(ch1) * 10;
+        line_num[SA_cell_command] = charToInt(ch1) * 10;
         if (fread(&ch1, sizeof(char), 1, f_in) == 0)
             goto error_;
-        line_num[cmd_count] += charToInt(ch1);
+        line_num[SA_cell_command] += charToInt(ch1);
 
         if (fread(&ch1, sizeof(char), 1, f_in) == 0)
             goto error_;
@@ -837,6 +837,8 @@ int SB_translator(char *file_in, char *file_out)
 
     ms_console_message("SB_translator return 0");
     fclose(f_in); fclose(f_out);
+    SA_translator(file_out, "q.o");
+    sc_memoryLoad("q.o");
     return 0;
 
 

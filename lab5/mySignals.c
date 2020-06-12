@@ -334,8 +334,8 @@ int ms_keyhandler(enum keys key)
             break;
         case KEY_F5:
             ms_console_message("Enter value accumulator (in 10 NS): ");
-            scanf("%d", &value);
-            accumulator = value;
+            scanf("%hi", &accumulator);
+            //accumulator = value;
             break;
         case KEY_F6:
             ms_console_message("Enter value instructionCounter (in 10 NS): ");
