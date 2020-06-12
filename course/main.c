@@ -25,11 +25,12 @@ int main()
     ram[22] = 5140; //jump [20] //цикл
     ram[30] = 8419; //addc [99]
     ram[31] = 5504; //halt [0]
-    ram[32] = 16384 + 1;
+    ram[32] = 16384 + 10;
 
     instructionCounter = 0;
     sc_regInit();
     mt_clrscr();
+    rk_mytermregime(1, 100, 50, 1, 1);
 
     bool quit = false;
     ms_interface_static();
@@ -44,6 +45,7 @@ int main()
             ms_keyhandler(key);
     }
 
+    //SB_translator("file.sb", "file.sa");
     return 0;
 }
 
