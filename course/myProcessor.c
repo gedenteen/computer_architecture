@@ -453,8 +453,9 @@ int SB_commands()
                 break;
             }
         }
-        if (!find_)
+        if (find_ == false)
             return -1;
+        mt_gotoXY(24,40); printf("u=%d", u);
 
         if (fread(&ch1, sizeof(char), 1, f_in) == 1)
             if (ch1 != '\n')
@@ -616,67 +617,141 @@ int SB_commands()
 //                return -1;
         //mt_gotoXY(23, 35); printf("qwe60 done");
     }
-    else if (strncmp(ch10, "LET", 3) == 0)
+    else if (strncmp(ch10, "LET", 3) == 0) ///-- IF --///
     {
-        char l1, l2, l3, sign;
-        fread(&l1, sizeof(char), 1, f_in); /// 'C'
+        int temp = 0, number, i, index;
+        char l[100], sign;
+        bool first_time = true;
+
+        fread(&l[0], sizeof(char), 1, f_in); /// 'C'
         fread(&ch1, sizeof(char), 1, f_in); /// ' '
         fread(&ch1, sizeof(char), 1, f_in); /// '='
         fread(&ch1, sizeof(char), 1, f_in); /// ' '
-        fread(&l2, sizeof(char), 1, f_in); /// 'A'
-        fread(&ch1, sizeof(char), 1, f_in); /// ' '
-        fread(&sign, sizeof(char), 1, f_in); /// '-'
-        fread(&ch1, sizeof(char), 1, f_in); /// ' '
-        fread(&l3, sizeof(char), 1, f_in); /// 'B'
+        for (i = 1; i < 100; i++)
+        {
+            if (fread(&l[i], sizeof(char), 1, f_in) == 0)
+                break;
+            if (l[i] == '\n')
+                break;
 
-        int u1 = -1, u2 = -1, u3 = -1;
+            number = charToInt(l[i]);
+            if (number >= 0 && number <= 9)
+            { ///если задано число
+                temp = number;
+                while (1)
+                {
+                    if (fread(&l[i], sizeof(char), 1, f_in) == 0)
+                        break;
+                    if (l[i] == '\n' || l[i] == ' ')
+                    {
+                        ungetc(l[i], f_in); ///вернуть указатель в файле на 1
+                        break;
+                    }
+
+                    number = charToInt(l[i]);
+                    if (number >= 0 && number <= 9)
+                        temp = temp * 10 + number;
+                } ///конец считывания числа
+                fprintf(f_out, "%02X = +%04X \n", SA_cell_letter, temp);
+                if (first_time)
+                {
+                    first_time = false;
+                    fprintf(f_out, "%02X LOAD %02X \n", SA_cell_command, SA_cell_letter);
+                    SA_cell_command++;
+                }
+                else switch (sign)
+                    {
+                        case '+':
+                            fprintf(f_out, "%02X ADD %02X \n", SA_cell_command, SA_cell_letter);
+                            SA_cell_command++;
+                            break;
+                        case '-':
+                            fprintf(f_out, "%02X SUB %02X \n", SA_cell_command, SA_cell_letter);
+                            SA_cell_command++;
+                            break;
+                        case '/':
+                            fprintf(f_out, "%02X DIVIDE %02X \n", SA_cell_command, SA_cell_letter);
+                            SA_cell_command++;
+                            break;
+                        case '*':
+                            fprintf(f_out, "%02X MUL %02X \n", SA_cell_command, SA_cell_letter);
+                            SA_cell_command++;
+                            break;
+                        default:
+                            return -1;
+                    }
+                //index = SA_cell_letter;
+                SA_cell_letter--;
+            }
+            else for (u = 0; u <= SB_vars_max; u++) ///если перменная
+            {
+                if (SB_vars[u].letter == l[i])
+                {
+                    if (first_time)
+                    {
+                        first_time = false;
+                        fprintf(f_out, "%02X LOAD %02X \n", SA_cell_command, SB_vars[u].cell);
+                        SA_cell_command++;
+                    }
+                    else switch (sign)
+                    {
+                        case '+':
+                            fprintf(f_out, "%02X ADD %02X \n", SA_cell_command, SB_vars[u].cell);
+                            SA_cell_command++;
+                            break;
+                        case '-':
+                            fprintf(f_out, "%02X SUB %02X \n", SA_cell_command, SB_vars[u].cell);
+                            SA_cell_command++;
+                            break;
+                        case '/':
+                            fprintf(f_out, "%02X DIVIDE %02X \n", SA_cell_command, SB_vars[u].cell);
+                            SA_cell_command++;
+                            break;
+                        case '*':
+                            fprintf(f_out, "%02X MUL %02X \n", SA_cell_command, SB_vars[u].cell);
+                            SA_cell_command++;
+                            break;
+                        default:
+                            return -1;
+                    }
+                    break;
+                }
+            }
+            if (first_time == false) ///если сложение, умножение
+                switch (l[i])
+                {
+                    case '+':
+                    case '-':
+                    case '/':
+                    case '*':
+                        sign = l[i];
+                        break;
+                    default:
+                        break;
+                }
+
+            fread(&ch1, sizeof(char), 1, f_in); /// ' '
+            if (ch1 == '\n')
+                break;
+        }
+
+
+        int u0 = -1;
         for (u = 0; u <= SB_vars_max; u++)
         {
-            if (SB_vars[u].letter == l1)
-                u1 = u;
-            if (SB_vars[u].letter == l2)
-                u2 = u;
-            if (SB_vars[u].letter == l3)
-                u3 = u;
+            if (SB_vars[u].letter == l[0])
+                u0 = u;
         }
-        if (u2 == -1 || u3 == -1) ///если нет А или B
-            return -1;
-        if (u1 == -1) ///если нет С
+        if (u0 == -1) ///если не объявлена переменная, которая перед =
         {
-            SB_vars[SB_vars_max].letter = l1; ///новая переменная, ее буква
+            SB_vars[SB_vars_max].letter = l[0]; ///новая переменная, ее буква
             SB_vars[SB_vars_max].cell = SA_cell_letter; ///ее ячейка в ram
-            u1 = SB_vars_max;
+            u0 = SB_vars_max;
             SB_vars_max++; ///кол-во переменных +1
             SA_cell_letter--; ///номер для следующей переменной сдвигается назад
         }
-
-        fprintf(f_out, "%02X LOAD %02X \n", SA_cell_command, SB_vars[u2].cell);
+        fprintf(f_out, "%02X STORE %02X \n", SA_cell_command, SB_vars[u0].cell);
         SA_cell_command++;
-        switch (sign)
-        {
-            case '+':
-                fprintf(f_out, "%02X ADD %02X \n", SA_cell_command, SB_vars[u3].cell);
-                break;
-            case '-':
-                fprintf(f_out, "%02X SUB %02X \n", SA_cell_command, SB_vars[u3].cell);
-                break;
-            case '/':
-                fprintf(f_out, "%02X DIVIDE %02X \n", SA_cell_command, SB_vars[u3].cell);
-                break;
-            case '*':
-                fprintf(f_out, "%02X MUL %02X \n", SA_cell_command, SB_vars[u3].cell);
-                break;
-            default:
-                return -1;
-        }
-        SA_cell_command++;
-        fprintf(f_out, "%02X STORE %02X \n", SA_cell_command, SB_vars[u1].cell);
-        SA_cell_command++;
-
-        if (fread(&ch1, sizeof(char), 1, f_in) == 0)
-            return -1;
-        if (ch1 != '\n')
-            return -1;
     }
     else if (strncmp(ch10, "END", 3) == 0)
     {
@@ -691,6 +766,19 @@ int SB_commands()
 }
 int SB_translator(char *file_in, char *file_out)
 {
+    for (int i = 0; i < 100; i++)
+    {
+        line_num[i] = 0;
+    }
+    cmd_count = 0;
+    for (int i = 0; i <= SB_vars_max; i++)
+    {
+        SB_vars[i].letter = 0;
+        SB_vars[i].cell = 0;
+    }
+    SB_vars_max = 0;
+    SA_cell_command = 0, SA_cell_letter = 99; ///конец обнуления
+
     int real_line_num = 0;
     if (!(f_in = fopen(file_in, "rb")))
     {
