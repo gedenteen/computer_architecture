@@ -45,7 +45,7 @@ int main()
             ms_keyhandler(key);
     }
 
-    SB_translator("file.sb", "file.sa");
+    //SB_translator("file.sb", "file.sa");
     return 0;
 }
 

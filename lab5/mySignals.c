@@ -158,23 +158,37 @@ void ms_interface_static()
 	mt_gotoXY(13, 49);
 	printf(" Keys ");
 
-	mt_setfgcolor(WHITE); //содержимое keys
-	mt_gotoXY(14, 48);
-	printf("l - load; s - save");
+	mt_setfgcolor(WHITE);
+	mt_gotoXY(14, 48); //содержимое keys
+	mt_setfgcolor(YELLOW); printf("l");
+	mt_setfgcolor(WHITE); printf(" - load; ");
+	mt_setfgcolor(YELLOW); printf("s");
+	mt_setfgcolor(WHITE); printf(" - save;");
 	mt_gotoXY(15, 48);
-	printf("r - run; t - step");
+	mt_setfgcolor(YELLOW); printf("r");
+	mt_setfgcolor(WHITE); printf(" - run; ");
+	mt_setfgcolor(YELLOW); printf("t");
+	mt_setfgcolor(WHITE); printf(" - step;");
 	mt_gotoXY(16, 48);
-	printf("a - Simple Assembler translator");
+	mt_setfgcolor(YELLOW); printf("a");
+	mt_setfgcolor(WHITE); printf(" - Simple Assembler translator;");
 	mt_gotoXY(17, 48);
-	printf(" ");
+	mt_setfgcolor(YELLOW); printf("b");
+	mt_setfgcolor(WHITE); printf(" - Simple Basic translator;");
 	mt_gotoXY(18, 48);
-	printf("i - reset");
+	mt_setfgcolor(YELLOW); printf("Enter");
+	mt_setfgcolor(WHITE); printf(" - enter value in ram;");
 	mt_gotoXY(19, 48);
-	printf("F5 - accumulator");
+	mt_setfgcolor(YELLOW); printf("F5");
+	mt_setfgcolor(WHITE); printf(" - accumulator;");
 	mt_gotoXY(20, 48);
-	printf("F6 - instructionCounter");
+	mt_setfgcolor(YELLOW); printf("F6");
+	mt_setfgcolor(WHITE); printf(" - instructionCounter;");
 	mt_gotoXY(21, 48);
-	printf("q - quit");
+	mt_setfgcolor(YELLOW); printf("i");
+	mt_setfgcolor(WHITE); printf(" - reset; ");
+	mt_setfgcolor(YELLOW); printf("q");
+	mt_setfgcolor(WHITE); printf(" - quit;");
 }
 
 int ms_interface()
@@ -274,12 +288,10 @@ void ms_console_message(char st[])
     printf("%s", st);
 }
 
-bool no_enter;
 int ms_keyhandler(enum keys key)
 {
     char file_name[50], file_name1[50], ch5[5];
     int value, value1;
-    no_enter = false;
     switch (key)
     {
         case KEY_L:
@@ -337,13 +349,18 @@ int ms_keyhandler(enum keys key)
             memx = value / 10; memy = value % 10;
             break;
         case KEY_A:
-            no_enter = true;
             ms_console_message("Enter names files *.sa ");
             scanf("%s", file_name);
             ms_console_message("Enter name file *.o ");
             scanf("%s", file_name1);
             SA_translator(file_name, file_name1);
-            no_enter = false;
+            break;
+        case KEY_B:
+            ms_console_message("Enter names files *.sb ");
+            scanf("%s", file_name);
+            ms_console_message("Enter name file *.sa ");
+            scanf("%s", file_name1);
+            SB_translator(file_name, file_name1);
             break;
         case KEY_ENTER:
             ms_console_message("Enter value this cell (in 16 NS): ");
@@ -369,6 +386,7 @@ int ms_keyhandler(enum keys key)
                 value += charToInt(ch5[2]);
                 if (value >= 128)
                 {
+                    sc_regSet(OVERFLOW, 1);
                     ms_console_message("Wrong value");
                     return -1;
                 }
@@ -376,16 +394,12 @@ int ms_keyhandler(enum keys key)
                 value1 += charToInt(ch5[4]);
                 if (value1 >= 128)
                 {
+                    sc_regSet(OVERFLOW, 1);
                     ms_console_message("Wrong value");
                     return -1;
                 }
                 ram[instructionCounter] = (value << 7) + value1;
             }
-
-
-
-
-
             break;
         default:
             break;
